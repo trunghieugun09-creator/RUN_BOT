@@ -88,9 +88,7 @@ PRIVATE_ONLY_MSG = (
     "␥ Vui lòng nhắn tin riêng cho bot để tiếp tục sử dụng các tính năng!.\n"
     "\n"
  )
-def is_private_chat2(chat_id):
-    return chat_id < 0
-    
+
 COMMAND_ALLOW_GROUP = {
     "/regfb": False,
     "/checkif": False,
@@ -99,6 +97,14 @@ COMMAND_ALLOW_GROUP = {
 }
 
 # ================= TELEGRAM UTILS =================
+def block_group_if_needed(chat_id, text, message_id):
+    if chat_id < 0:
+        cmd = text.split()[0].lower()
+        if cmd in COMMAND_ALLOW_GROUP and not COMMAND_ALLOW_GROUP[cmd]:
+            tg_send(chat_id, PRIVATE_ONLY_MSG, reply_to_message_id=message_id)
+            return True
+    return False
+
 def get_time_tag():
     return datetime.datetime.now().strftime("[%H:%M:%S]")
 
@@ -186,7 +192,7 @@ def check_group_membership(user_id):
     except Exception as e:
         # print(f"Lỗi khi kiểm tra tư cách thành viên nhóm: {e}")
         # Mặc định cho phép nếu có lỗi API/mạng để tránh khoá người dùng
-        return True 
+        return False
 
 # ================= SAFE HELPER (Tích hợp từ bot_check_info.py) =================
 def safe_int(n):
@@ -1002,9 +1008,6 @@ def handle_start(chat_id, user_name, message_id):
     tg_send(chat_id, text, reply_to_message_id=message_id)
 
 def handle_help(chat_id, message_id):
-    if not is_private_chat(chat_id):
-        tg_send(chat_id, PRIVATE_ONLY_MSG, parse_mode="HTML")
-        return
         
     """Xử lý lệnh /help - Đã cập nhật thông báo xoá tin nhắn"""
     text = (
@@ -1035,10 +1038,8 @@ def handle_help(chat_id, message_id):
     )
     tg_send(chat_id, text, reply_to_message_id=message_id)
 
-def format_myinfo(user_info):
-    if not is_private_chat(chat_id):
-        tg_send(chat_id, PRIVATE_ONLY_MSG, parse_mode="HTML")
-        return
+def format_myinfo(chat_id, user_info):
+    
     # ... (giữ nguyên hàm format_myinfo)
     """Format thông tin user"""
     uid = user_info.get("id")
@@ -1061,7 +1062,7 @@ def format_myinfo(user_info):
 
 def handle_myinfo(chat_id, user_info, message_id):
     """Xử lý lệnh /myinfo - Xóa tin nhắn sau 60 giây"""
-    text = format_myinfo(user_info)
+    text = format_myinfo(chat_id, user_info)
     sent_msg_id = tg_send(chat_id, text, reply_to_message_id=message_id)
     
     if sent_msg_id:
@@ -1105,101 +1106,50 @@ def handle_symbols(chat_id, message_id):
 
 
 def handle_checkif(chat_id, user_input, message_id, user_name):
-    if not is_private_chat(chat_id):
-        tg_send(chat_id, PRIVATE_ONLY_MSG, parse_mode="HTML")
-        return
     """Xử lý lệnh /checkif - Xóa tin nhắn sau 60 giây"""
-    
-    # Gửi thông báo đang xử lý
-    processing_msg = tg_send(chat_id, "⏳ Đang xử lý yêu cầu...", reply_to_message_id=message_id)
+
+    # 1. Gửi thông báo đang xử lý (REPLY đúng tin nhắn lệnh)
+    processing_msg = tg_send(
+        chat_id,
+        "⏳ Đang xử lý...",
+        reply_to_message_id=message_id
+    )
     if not processing_msg:
         return
-        
-    sent_result_msg_id = None
-        
-    try:
-        # Bước 1: Trích xuất UID
-        tg_edit(chat_id, processing_msg, f"🔍 Đang phân tích: {html_escape(user_input[:50])}...")
-        uid = extract_uid_from_input(user_input)
-        
-        if not uid:
-            tg_edit(chat_id, processing_msg, 
-                                 "❌ Không thể lấy UID. Vui lòng kiểm tra lại:\n• Link có đúng định dạng Facebook không?\n• UID có phải là số không?\n\n<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>")
-            sent_result_msg_id = processing_msg
-            # Tự hủy tin nhắn sau 60s
-            threading.Thread(target=self_destruct_message, args=(chat_id, sent_result_msg_id, message_id, 60), daemon=True).start()
-            return
-        
-        # Bước 2: Lấy thông tin Facebook
-        tg_edit(chat_id, processing_msg, f"✅ Đã lấy UID: <code>{uid}</code>\n⏳ Đang gọi API tra cứu...")
-        
-        result = get_fb_info(uid)
-        
-        if "error" in result:
-            error_msg = result["error"]
-            tg_edit(chat_id, processing_msg, f"❌ {html_escape(error_msg)}\n\nUID: <code>{uid}</code>\nAPI: <code>{API_INFO_URL}</code>\n\n<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>")
-            sent_result_msg_id = processing_msg
-            # Tự hủy tin nhắn sau 60s
-            threading.Thread(target=self_destruct_message, args=(chat_id, sent_result_msg_id, message_id, 60), daemon=True).start()
-            return
-        
-        # Bước 3: Tạo và gửi kết quả
-        res = result["data"]
-        
-        if not res:
-            tg_edit(chat_id, processing_msg, f"⚠️ API trả về dữ liệu trống\nUID: <code>{uid}</code>\n\n<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>")
-            sent_result_msg_id = processing_msg
-            # Tự hủy tin nhắn sau 60s
-            threading.Thread(target=self_destruct_message, args=(chat_id, sent_result_msg_id, message_id, 60), daemon=True).start()
-            return
-        
-        # Thêm thông báo tự xóa vào caption
-        caption = create_caption(res) + "\n\n<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>"
-        avatar = res.get("avatar")
-        
-        # Xóa tin nhắn "Đang xử lý..."
-        tg_delete_message(chat_id, processing_msg)
-        
-        if avatar and isinstance(avatar, str) and avatar.startswith(('http://', 'https://')):
-            # Gửi ảnh và caption
-            r = requests.post(
-                f"{API}/sendPhoto",
-                data={
-                    "chat_id": chat_id, 
-                    "photo": avatar, 
-                    "caption": caption, 
-                    "parse_mode": "HTML",
-                    "reply_to_message_id": message_id
-                },
-                timeout=20
-            ).json()
-            sent_result_msg_id = r.get("result", {}).get("message_id")
-            
-            if not sent_result_msg_id:
-                # Nếu gửi ảnh lỗi, gửi text thay thế
-                print(f"{get_time_tag()} Lỗi gửi ảnh, chuyển sang gửi text.")
-                sent_result_msg_id = tg_send(chat_id, f"📷 (Không thể tải ảnh đại diện)\n\n{caption}", reply_to_message_id=message_id)
-        else:
-            # Chỉ gửi tin nhắn nếu không có ảnh
-            sent_result_msg_id = tg_send(chat_id, caption, reply_to_message_id=message_id)
-            
-        # Bước 4: Tự hủy tin nhắn sau 60s nếu gửi thành công
-        if sent_result_msg_id:
-            threading.Thread(
-                target=self_destruct_message, 
-                args=(chat_id, sent_result_msg_id, message_id, 60), 
-                daemon=True
-            ).start()
-            
-    except Exception as e:
-        error_msg = f"⚠️ Lỗi xử lý: {str(e)[:200]}\n\n<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>"
-        try:
-            tg_edit(chat_id, processing_msg, error_msg)
-            sent_result_msg_id = processing_msg
-        except:
-            sent_result_msg_id = tg_send(chat_id, error_msg, reply_to_message_id=message_id)
-        print(f"{get_time_tag()} [CHECKIF ERROR] {e}")
 
+    try:
+        # 2. Trích UID
+        uid = extract_uid_from_input(user_input)
+        if not uid:
+            tg_edit(chat_id, processing_msg, "❌ Không lấy được UID từ input.")
+            return
+
+        # 3. Gọi API lấy info
+        api_result = get_fb_info(uid)
+
+        if "error" in api_result:
+            tg_edit(chat_id, processing_msg, f"❌ {html_escape(api_result['error'])}")
+            return
+
+        # 4. Format kết quả
+        caption = create_caption(api_result["data"])
+
+        # 5. Edit lại tin nhắn đang xử (GIỮ REPLY CHAIN)
+        tg_edit(chat_id, processing_msg, caption)
+
+        # 6. Tự xoá sau 60s (xoá cả lệnh + kết quả)
+        threading.Thread(
+            target=self_destruct_message,
+            args=(chat_id, processing_msg, message_id, 60),
+            daemon=True
+        ).start()
+
+    except Exception as e:
+        tg_edit(
+            chat_id,
+            processing_msg,
+            f"❌ Lỗi hệ thống: {html_escape(str(e)[:100])}"
+        )
 
 # ================= BOT MAIN LOOP =================
 def get_bot_username():
@@ -1272,14 +1222,10 @@ while True:
                          
                 continue # Bỏ qua xử lý các lệnh khác
         # --- KẾT THÚC PHẦN KIỂM TRA THÀNH VIÊN NHÓM BẮT BUỘC ---
-        if is_private_chat2(chat_id) and not COMMAND_ALLOW_GROUP.get(cmd, False):
-           tg_send(
-                  chat_id,
-                  PRIVATE_ONLY_MSG,
-                  reply_to_message_id=message_id
-              )
-              continue
-        
+        if text.startswith("/"):
+               if block_group_if_needed(chat_id, text, message_id):
+                continue
+
         if cmd == "/regfb" or cmd == f"/regfb{BOT_USERNAME}":
             threading.Thread(
                 target=reg_single_account,
