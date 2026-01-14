@@ -17,7 +17,7 @@ from pystyle import Colors, Colorate # Giữ lại nếu bạn đang sử dụng
 keep_alive.keep_alive()
 # ================= CONFIG TELEGRAM =================
 BOT_TOKEN = os.environ["BOT_TOKEN"].strip()
-API = f"https://api.telegram.org/bot{BOT_TOKEN}"
+API = f"https://api.telegram.org/bot{BOT_TOKEN}/getMe"
 UID_FILE = "tele_uid.txt"
 OFFSET = 0
 REG_DELAY = 10
