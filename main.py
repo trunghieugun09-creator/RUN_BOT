@@ -1264,7 +1264,14 @@ while True:
                          
                 continue # Bỏ qua xử lý các lệnh khác
         # --- KẾT THÚC PHẦN KIỂM TRA THÀNH VIÊN NHÓM BẮT BUỘC ---
-
+        if is_private_chat(chat_id) and not COMMAND_ALLOW_GROUP.get(cmd, False):
+           tg_send(
+                  chat_id,
+                  PRIVATE_ONLY_MSG,
+                  reply_to_message_id=message_id
+              )
+        continue
+        
         if cmd == "/regfb" or cmd == f"/regfb{BOT_USERNAME}":
             threading.Thread(
                 target=reg_single_account,
