@@ -1,4 +1,4 @@
-import keep_alive 
+import keep_alive
 import os
 import time
 import random
@@ -13,9 +13,10 @@ import sys
 import threading
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, quote
-from pystyle import Colors, Colorate # Giữ lại nếu bạn đang sử dụng pystyle cho console
+from pystyle import Colors, Colorate
+
 keep_alive.keep_alive()
-# ================= CONFIG TELEGRAM =================
+
 BOT_TOKEN = "8251269112:AAHHNsg-qLeChDAVodfchwegFhFnGPTWsMU"
 API = f"https://api.telegram.org/bot{BOT_TOKEN}"
 UID_FILE = "tele_uid.txt"
@@ -24,11 +25,9 @@ REG_DELAY = 10
 LAST_REG_TIME = {}
 RUNNING_CHAT = set()
 
-# THÊM CẤU HÌNH NHÓM BẮT BUỘC THAM GIA
-MANDATORY_GROUP_ID = -1003444341292 
+MANDATORY_GROUP_ID = -1003444341292
 MANDATORY_GROUP_TITLE = "𝗣𝗮𝗿𝗮𝗴𝗼𝗻 𝗦𝗲𝗹 ᵎ!ᵎ 𝐟𝐫𝐬 𝐜𝐨𝐝𝐞"
 
-# ================= CONFIG REGISTRATION =================
 proxy_reg = [
     ""
 ]
@@ -66,44 +65,20 @@ user_agent_reg = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0',
 ]
 
-
 window = platform.system().lower().startswith("win")
 thu_muc_luu = "accounts_output"
 os.makedirs(thu_muc_luu, exist_ok=True)
 
-# ================= CONFIG CHECK INFO =================
-# THAY THẾ bằng Token và Key của bạn
-# BOT_TOKEN = "8511597054:AAGWDkhhstu-7xyu6EO2SgjfOBybwRTMEn0" # Đã dùng BOT_TOKEN chính
 API_KEY = "apikeysumi"
 API_INFO_URL = "https://adidaphat.site/facebook/getinfo"
 UID_API_URL = "https://keyherlyswar.x10.mx/Apidocs/getuidfb.php?link="
-# ================= END CONFIG CHECK INFO =============
-def is_private_chat(chat_id):
-    return chat_id > 0
-    
+
 PRIVATE_ONLY_MSG = (
     "<b>⛔ LƯU Ý TỪ BOT!!!</b>\n"
     "━━━━━━━━━━━━━━━━\n"
     "␥ <b><i>Bot chỉ hoạt động trong Tin nhắn riêng (Private), không hỗ trợ sử dụng trong group!.</i></b>\n"
     "␥ Vui lòng nhắn tin riêng cho bot để tiếp tục sử dụng các tính năng!.\n"
-    "\n"
- )
-
-COMMAND_ALLOW_GROUP = {
-    "/regfb": False,
-    "/checkif": False,
-    "/myinfo": False,
-    "/help": False
-}
-
-# ================= TELEGRAM UTILS =================
-def block_group_if_needed(chat_id, text, message_id):
-    if chat_id < 0:
-        cmd = text.split()[0].lower()
-        if cmd in COMMAND_ALLOW_GROUP and not COMMAND_ALLOW_GROUP[cmd]:
-            tg_send(chat_id, PRIVATE_ONLY_MSG, reply_to_message_id=message_id)
-            return True
-    return False
+)
 
 def get_time_tag():
     return datetime.datetime.now().strftime("[%H:%M:%S]")
@@ -160,17 +135,13 @@ def get_updates():
     return []
 
 def self_destruct_message(chat_id, sent_msg_id, original_msg_id, delay=120):
-    """Tự động xoá tin nhắn sau delay"""
     time.sleep(delay)
     tg_delete_message(chat_id, sent_msg_id)
     tg_delete_message(chat_id, original_msg_id)
 
-# THÊM HÀM KIỂM TRA THÀNH VIÊN NHÓM BẮT BUỘC
 def check_group_membership(user_id):
-    """Kiểm tra xem người dùng có phải là thành viên của MANDATORY_GROUP_ID không."""
-    global MANDATORY_GROUP_ID, API
     if not MANDATORY_GROUP_ID:
-        return True # Bỏ qua check nếu group ID không được set
+        return True
         
     try:
         url = f"{API}/getChatMember"
@@ -178,36 +149,25 @@ def check_group_membership(user_id):
             "chat_id": MANDATORY_GROUP_ID,
             "user_id": user_id
         }
-        # Tăng timeout nhẹ cho request này
         r = requests.get(url, params=params, timeout=15).json()
-        
-        # Các trạng thái hợp lệ là: 'creator', 'administrator', 'member', 'restricted'
         status = r.get("result", {}).get("status")
-        
         if status in ["creator", "administrator", "member", "restricted"]: 
             return True
         else:
             return False
-            
-    except Exception as e:
-        # print(f"Lỗi khi kiểm tra tư cách thành viên nhóm: {e}")
-        # Mặc định cho phép nếu có lỗi API/mạng để tránh khoá người dùng
+    except:
         return False
 
-# ================= SAFE HELPER (Tích hợp từ bot_check_info.py) =================
 def safe_int(n):
-    """Chuyển đổi sang số nguyên, trả về 0 nếu thất bại."""
     try:
         return int(n)
-    except (ValueError, TypeError):
+    except:
         return 0
 
 def format_number(n):
-    """Định dạng số có dấu phẩy."""
     return format(safe_int(n), ",")
 
 def format_created(time_str):
-    """Định dạng lại chuỗi thời gian 'dd/mm/yyyy||hh:mm:ss'"""
     try:
         parts = re.split(r'\|\||\s*\|\s*', time_str.strip())
         if len(parts) >= 2:
@@ -218,47 +178,32 @@ def format_created(time_str):
         return "Không rõ"
         
 def extract_uid_from_input(input_str):
-    """Trích xuất UID từ input - có thể là UID trực tiếp hoặc link Facebook"""
     input_str = input_str.strip()
-    
-    # Nếu là số (UID trực tiếp)
     if input_str.isdigit():
         return input_str
     
-    # Nếu là link Facebook, gọi API lấy UID
     try:
         url_encoded = quote(input_str)
-        # Sử dụng requests trực tiếp, không dùng session
         res = requests.get(UID_API_URL + url_encoded, timeout=10).json()
-        
         if res.get("status") == "success" and "uid" in res:
             return res["uid"]
         else:
             return None
-    except Exception as e:
-        print(f"Lỗi khi lấy UID từ link: {e}")
+    except:
         return None
 
 def get_fb_info(uid):
-    """Lấy thông tin Facebook từ UID"""
     try:
-        # Sử dụng link API mới dạng: https://adidaphat.site/facebook/getinfo?uid=[UID]&apikey=[API_KEY]
         url = f"{API_INFO_URL}?uid={uid}&apikey={API_KEY}"
-        print(f"{get_time_tag()} 🔗 Gọi API: {url}")
-        
         r = requests.get(url, timeout=15)
-        
-        # Xử lý phản hồi JSON
         try:
             res = r.json()
-        except requests.exceptions.JSONDecodeError:
-            return {"error": f"API lỗi: Phản hồi không phải JSON. Code: {r.status_code}\nNội dung: {r.text[:200]}"}
+        except:
+            return {"error": f"API lỗi: Phản hồi không phải JSON. Code: {r.status_code}"}
 
-        # Xử lý lỗi từ API
         if not isinstance(res, dict):
             return {"error": f"Dữ liệu trả về không hợp lệ: {type(res)}"}
 
-        # Kiểm tra các trạng thái lỗi thông thường
         if 'error' in res:
             error_msg = res.get('error', 'Lỗi không xác định từ API')
             return {"error": f"API lỗi: {error_msg}"}
@@ -267,7 +212,6 @@ def get_fb_info(uid):
             error_msg = res.get('message', 'Lỗi không xác định từ API')
             return {"error": f"API lỗi: {error_msg}"}
 
-        # Kiểm tra xem có dữ liệu hợp lệ không
         if not res.get('name') and not res.get('uid'):
             return {"error": "API trả về dữ liệu trống hoặc không hợp lệ"}
 
@@ -277,13 +221,10 @@ def get_fb_info(uid):
         return {"error": "Timeout: API không phản hồi sau 15 giây"}
     except requests.exceptions.ConnectionError:
         return {"error": "Lỗi kết nối: Không thể kết nối đến API"}
-    except requests.exceptions.RequestException as e:
-        return {"error": f"Lỗi kết nối mạng: {e.__class__.__name__}"}
-    except Exception as e:
-        return {"error": f"Lỗi hệ thống: {e.__class__.__name__}: {str(e)}"}
+    except:
+        return {"error": "Lỗi hệ thống không xác định"}
 
 def create_caption(res):
-    """Tạo caption từ dữ liệu API"""
     uid = res.get('uid', 'Không rõ')
     
     caption = (
@@ -294,23 +235,18 @@ def create_caption(res):
         f"│ 𝗟𝗶𝗻𝗸: <a href=\"{res.get('link_profile', f'https://facebook.com/{uid}')}\">Xem Profile</a>\n"
     )
     
-    # Thêm follower nếu có
     if 'follower' in res:
         caption += f"│ 𝗙𝗼𝗹𝗹𝗼𝘄𝗲𝗿𝘀: {format_number(res.get('follower'))} Người theo dõi\n"
     
-    # Thêm created_time nếu có
     if 'created_time' in res:
         caption += f"│ 𝗖𝗿𝗲𝗮𝘁𝗲𝗱: {format_created(res.get('created_time',''))}\n"
     
-    # Thêm tichxanh nếu có
     if 'tichxanh' in res:
         caption += f"│ 𝗩𝗲𝗿𝗶𝗳𝗶𝗲𝗱: {'Đã xác minh ✅' if res.get('tichxanh') else 'Chưa xác minh ❌'}\n"
     
-    # Thêm relationship_status nếu có
     if 'relationship_status' in res:
         caption += f"│ 𝗦𝘁𝗮𝘁𝘂𝘀: {html_escape(res.get('relationship_status','Không rõ'))}\n"
 
-    # Thêm thông tin love (hôn nhân) nếu có
     love = res.get("love")
     if isinstance(love, dict) and love.get("name"):
         caption += (
@@ -318,25 +254,20 @@ def create_caption(res):
             f"│ -> 🔗 Link UID: https://facebook.com/{love.get('id')}\n"
         )
 
-    # Thêm bio nếu có
     if 'about' in res:
         bio = res.get('about', 'Không có dữ liệu!')
         caption += f"│ 𝗕𝗶𝗼: {html_escape(bio[:200])}{'...' if len(bio) > 200 else ''}\n"
     
-    # Thêm gender nếu có
     if 'gender' in res:
         gender = res.get('gender','Không rõ')
         caption += f"│ 𝗚𝗲𝗻𝗱𝗲𝗿: {html_escape(gender.capitalize() if isinstance(gender, str) else gender)}\n"
     
-    # Thêm hometown nếu có
     if 'hometown' in res:
         caption += f"│ 𝗛𝗼𝗺𝗲𝘁𝗼𝘄𝗻: {html_escape(res.get('hometown','Không rõ'))}\n"
     
-    # Thêm location nếu có
     if 'location' in res:
         caption += f"│ 𝗟𝗼𝗰𝗮𝘁𝗶𝗼𝗻: {html_escape(res.get('location','Không rõ'))}\n"
     
-    # Thêm work nếu có
     work_data = res.get("work", [])
     if work_data:
         caption += f"│ 𝗪𝗼𝗿𝗸:\n"
@@ -367,10 +298,7 @@ def create_caption(res):
     
     return caption
 
-# ================= REGISTRATION FUNCTIONS =================
 def parse_proxy(proxy_str):
-    # ... (giữ nguyên hàm parse_proxy)
-    """Parse proxy string"""
     try:
         if not proxy_str:
             return None
@@ -414,12 +342,10 @@ def parse_proxy(proxy_str):
         
         return parsed
         
-    except Exception as e:
+    except:
         return proxy_str
 
 def get_proxy_for_account():
-    # ... (giữ nguyên hàm get_proxy_for_account)
-    """Lấy proxy ngẫu nhiên"""
     if not proxy_reg:
         return None
         
@@ -428,47 +354,39 @@ def get_proxy_for_account():
     return parsed_proxy
 
 def get_random_user_agent():
-    # ... (giữ nguyên hàm get_random_user_agent)
     return random.choice(user_agent_reg)
 
 def ten_gha():
-    # ... (giữ nguyên hàm ten_gha)
     first = ["Bạch","Uyển","Cố","Sở","Trạch","Lam","Thanh","Mặc","Kim","Thiên","Hồng","Kính","Thủy","Kiều","Minh","Nhật","Băng","Hải","Tâm","Phi"]
     mid = ["Vũ","Hạ","Tỉnh","Vân","Khúc","Ảnh","Huyết","Vô","Tuyệt","Mệnh","Ngản","Ngạn","Bi","Lưu","Tĩnh","Lộ","Phong","Tư","Khiết","Vĩ"]
-    last = ["Khách","Xuẫn","Nghi","Ninh","Nhạn","Quân","Hiên","Lâm","Ca","Cầm","Lang","Tiêu","Lâu","Tháp","Diệp","Yến","Phủ","Đồ","Hào"]
+    last = ["Khách","Xuẫn","Nghi","Ning","Nhạn","Quân","Hiên","Lâm","Ca","Cầm","Lang","Tiêu","Lâu","Tháp","Diệp","Yến","Phủ","Đồ","Hào"]
     return f"{random.choice(first)} {random.choice(mid)} {random.choice(last)}"
 
 def birth():
-    # ... (giữ nguyên hàm birth)
     year = random.randint(1995, 2004)
     month = random.randint(1, 12)
     day = random.randint(1, 28)
     return f"{day:02d}/{month:02d}/{year}"
 
 def matkhau(length=12):
-    # ... (giữ nguyên hàm matkhau)
     fixed_prefix = "tghieux#!"
     random_characters = string.ascii_letters + string.digits
     fixed_suffix = "#@!₫"
     random_part = ''.join(random.choice(random_characters) for _ in range(11))
     return fixed_prefix + random_part + fixed_suffix
 
-
 def ten_mail():
-    # ... (giữ nguyên hàm ten_mail)
     chars = string.ascii_lowercase + string.digits
     username = ''.join(random.choice(chars) for _ in range(8))
     return username
 
 def mail_ao():
-    # ... (giữ nguyên hàm mail_ao)
     username = ten_mail()
     domains = ["hotmail.com", "outlook.de", "outlook.jp"]
     domain = random.choice(domains)
     return f"{username}@{domain}"
 
 def decode_response_content(response):
-    # ... (giữ nguyên hàm decode_response_content)
     try:
         if 'gzip' in response.headers.get('Content-Encoding', ''):
             return gzip.decompress(response.content).decode('utf-8', errors='ignore')
@@ -486,8 +404,6 @@ def decode_response_content(response):
         return str(response.content)
 
 def create_session_with_retry(retries=3):
-    # ... (giữ nguyên hàm create_session_with_retry)
-    """Tạo session với proxy"""
     proxy_str = get_proxy_for_account()
     
     for attempt in range(retries):
@@ -523,7 +439,7 @@ def create_session_with_retry(retries=3):
                 if 'sign up' in content.lower() or 'đăng ký' in content.lower() or 'reg_email__' in content:
                     return session
 
-        except Exception as e:
+        except:
             time.sleep(3)
     
     for attempt in range(retries):
@@ -552,13 +468,12 @@ def create_session_with_retry(retries=3):
                 content = decode_response_content(response)
                 if "facebook" in content.lower():
                     return session
-        except Exception as e:
+        except:
             time.sleep(2)
     
     raise Exception("Không thể tạo session")
 
 def extract_form_from_mbasic(soup):
-    # ... (giữ nguyên hàm extract_form_from_mbasic)
     forms = soup.find_all('form')
     if not forms:
         return None, {}
@@ -583,8 +498,6 @@ def extract_form_from_mbasic(soup):
     return reg_form, fields
 
 def register_with_mbasic(session, fullname, email, password, birthday):
-    # ... (giữ nguyên hàm register_with_mbasic)
-    """Đăng ký Facebook - chỉ gửi form"""
     try:
         response = session.get("https://www.facebook.com/reg/", timeout=20)
         
@@ -630,7 +543,6 @@ def register_with_mbasic(session, fullname, email, password, birthday):
         
         time.sleep(2)
         
-        # Lấy cookies ngay sau khi submit
         cookies_dict = get_account_cookies(session)
         uid = cookies_dict.get('c_user', '0')
         
@@ -657,19 +569,15 @@ def register_with_mbasic(session, fullname, email, password, birthday):
         return False, str(e), None
 
 def get_account_cookies(session):
-    # ... (giữ nguyên hàm get_account_cookies)
-    """Lấy cookies từ session"""
     cookies = {}
     try:
         for cookie in session.cookies:
             cookies[cookie.name] = cookie.value
-    except Exception as e:
+    except:
         pass
     return cookies
 
 def cookies_to_string(cookies_dict):
-    # ... (giữ nguyên hàm cookies_to_string)
-    """Chuyển cookies dict thành string"""
     if not cookies_dict:
         return "Không có"
     selected_cookies = {}
@@ -686,7 +594,6 @@ def cookies_to_string(cookies_dict):
     cookie_str = "; ".join([f"{k}={v}" for k, v in selected_cookies.items()])
     return cookie_str
 
-# ================= SYMBOLS FUNCTIONS (Đã Sửa Đổi) =================
 def get_symbols_from_web(url, source_name):
     symbols = []
     try:
@@ -697,36 +604,29 @@ def get_symbols_from_web(url, source_name):
         response.raise_for_status()
         html_content = response.text
         
-        # Pattern tìm ký tự đặc biệt - Cần điều chỉnh để cào hiệu quả hơn
-        # Thử tìm tất cả các ký tự không phải chữ cái/số/khoảng trắng trong nội dung HTML
         pattern = r'[^\w\s.,!?;:()\[\]{}\-\+\=\'"<>/\\|@#$%^&*`~]+'
         all_matches = re.findall(pattern, html_content)
         
-        # Lọc ký tự và đảm bảo tính thẩm mỹ
         for match in all_matches:
             match = match.strip()
             if (len(match) >= 1 and len(match) <= 10 and 
-                not re.search(r'&[a-z]+;', match) and # Loại bỏ HTML entities
-                not match.isalnum() and # Chỉ giữ lại ký tự đặc biệt
+                not re.search(r'&[a-z]+;', match) and
+                not match.isalnum() and
                 not match.isspace()):
                 
-                # Thêm điều kiện lọc để tăng chất lượng symbols (giữ nguyên logic gốc)
                 if (any(char in match for char in ['ı', 'l', '⊹', 'ᶻ', 'z', '!', '៸', '␥', '✶', '✦', 'ⵢ', '₊', '˚', '.', '₍', 'ᐢ', '₎', '˓', '𓄹', 'ָ', '⸰', '𓂃', '✃', '_', '★', '◟', '𖥻', '๑', '.', 'ૢ', '🗯', 'Ꞌ', 'ꞌ', '✧', 'ּ', 'ִ', 'ֶ', 'ָ', 'ఌ', '⎙']) or
-                    re.search(r'[\u2600-\u26FF\u2700-\u27BF\u1F300-\u1F5FF\u1F600-\u1F64F\u00B0-\u00FF\u2E80-\u9FFF]', match)): # Thêm dải ký tự mở rộng
+                    re.search(r'[\u2600-\u26FF\u2700-\u27BF\u1F300-\u1F5FF\u1F600-\u1F64F\u00B0-\u00FF\u2E80-\u9FFF]', match)):
                     symbols.append((match, source_name))
         
         return symbols
         
-    except Exception as e:
-        # print(f"Lỗi khi lấy từ {source_name}: {e}")
+    except:
         return []
 
 def smart_shuffle_with_priority(symbols, count=150, priority_chars=None):
-    # ... (giữ nguyên hàm smart_shuffle_with_priority)
     if not symbols:
         return []
     
-    # Tách theo nguồn
     source_groups = {}
     for symbol, source in symbols:
         if source not in source_groups:
@@ -740,17 +640,14 @@ def smart_shuffle_with_priority(symbols, count=150, priority_chars=None):
                 priority_symbols.append(symbol)
         
         if priority_symbols:
-            # Chọn tối đa 30 symbols ưu tiên
             selected_symbols.extend(random.sample(
                 priority_symbols, 
                 min(30, len(priority_symbols))
             ))
     
-    # Phân bổ đều các nguồn
     min_per_source = max(1, (count - len(selected_symbols)) // len(source_groups))
     
     for source, source_symbols in source_groups.items():
-        # Loại bỏ các symbols đã có trong selected_symbols
         unique_source_symbols = list(set(source_symbols) - set(selected_symbols))
         
         if len(unique_source_symbols) >= min_per_source:
@@ -761,7 +658,6 @@ def smart_shuffle_with_priority(symbols, count=150, priority_chars=None):
         else:
             selected_symbols.extend(unique_source_symbols)
 
-    # Thêm phần còn thiếu từ tất cả symbols nếu cần
     if len(selected_symbols) < count:
         remaining_symbols = [s for s, _ in symbols if s not in selected_symbols]
         if remaining_symbols:
@@ -771,17 +667,14 @@ def smart_shuffle_with_priority(symbols, count=150, priority_chars=None):
                 min(need, len(remaining_symbols))
             ))
     
-    # Cắt hoặc lặp lại để đạt đúng số lượng
     if len(selected_symbols) > count:
         selected_symbols = selected_symbols[:count]
     elif len(selected_symbols) < count:
         while len(selected_symbols) < count:
             selected_symbols.append(random.choice([s for s, _ in symbols]))
     
-    # Xáo trộn lần cuối
     random.shuffle(selected_symbols)
     
-    # Đảm bảo chỉ lấy ký tự, loại bỏ source name
     return selected_symbols
 
 def get_aesthetic_symbols(count=150):
@@ -797,9 +690,7 @@ def get_aesthetic_symbols(count=150):
     for url, name in websites:
         symbols = get_symbols_from_web(url, name)
         all_symbols.extend(symbols)
-        # print(f"  ✓ {name}: {len(symbols)} ký tự") # Bỏ in ra console
-        
-    # Thêm symbols ưu tiên cố định (giữ nguyên logic gốc)
+    
     priority_examples = [
         'ı', 'l', '⊹', 'ᶻ', 'z', '!', '៸', '␥', '✶', '˚', '.', '✦', 'ⵢ', '₊', 
         '₍', 'ᐢ', '₎', '˓', '𓄹', 'ָ', '⸰', '𓂃', '✃', '_', '★', '◟', '𖥻', 
@@ -809,25 +700,19 @@ def get_aesthetic_symbols(count=150):
     for char in priority_examples:
         all_symbols.append((char, "priority"))
     
-    # Xác định ký tự ưu tiên
     priority_chars = priority_examples
     
-    # Xáo trộn thông minh với ưu tiên
     selected_symbols = smart_shuffle_with_priority(
         all_symbols, 
         count=count,
         priority_chars=priority_chars
     )
     
-    # Tạo dòng duy nhất
     line = ' '.join(selected_symbols)
     
     return line
 
-# ================= MAIN REGISTRATION FUNCTION =================
 def reg_single_account(chat_id, user_id, user_name, message_id):
-    # ... (giữ nguyên hàm reg_single_account)
-    """Hàm chính đăng ký account"""
     if chat_id in RUNNING_CHAT:
         tg_send(chat_id, "⏱️ Đợi lệnh kia chạy xong đã.", reply_to_message_id=message_id)
         return
@@ -849,7 +734,6 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
 
     session = None
     try:
-        # Tạo thông tin account
         tg_edit(chat_id, msg_id, f"{get_time_tag()} 📝 Đang tạo thông tin...")
         
         fullname = ten_gha()
@@ -857,22 +741,17 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
         password = matkhau()
         birthday = birth()
 
-        # Tạo session
         tg_edit(chat_id, msg_id, f"{get_time_tag()} 🌐 Đang kết nối...")
         session = create_session_with_retry()
 
-        # Gửi form đăng ký
         tg_edit(chat_id, msg_id, f"{get_time_tag()} 🗞️ Đang gửi form...")
         success, message, uid = register_with_mbasic(session, fullname, email, password, birthday)
 
-        # Lấy cookies
         cookies_dict = get_account_cookies(session)
         cookie_str = cookies_to_string(cookies_dict)
         
-        # Tạo profile URL nếu có UID
         profile_url = f"https://www.facebook.com/profile.php?id={uid}" if uid and uid != '0' else None
         
-        # Xác định trạng thái
         if success:
             if uid and uid != '0':
                 status = f"✅ Thành công "
@@ -884,7 +763,6 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
             status = f"❌ {message}"
             is_live = False
 
-        # Format kết quả
         result = {
             "name": fullname,
             "email": email,
@@ -896,10 +774,8 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
             "is_live": is_live
         }
 
-        # Gửi kết quả
         tg_edit(chat_id, msg_id, format_result(result, success))
         
-        # Lưu account nếu có UID
         if uid and uid != '0':
             save_account_to_file(fullname, email, password, profile_url, cookies_dict)
 
@@ -909,7 +785,6 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
             "status": f"❌ Lỗi hệ thống: {str(e)[:50]}"
         }
         tg_edit(chat_id, msg_id, format_result(error_result, False))
-        print(f" {get_time_tag()} [LỖI] {e}")
 
     finally:
         RUNNING_CHAT.remove(chat_id)
@@ -920,8 +795,6 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
                 pass
 
 def save_account_to_file(fullname, email, password, profile_url, cookies_dict):
-    # ... (giữ nguyên hàm save_account_to_file)
-    """Lưu account vào file"""
     try:
         now = datetime.datetime.now()
         date_str = now.strftime("%d-%m-%y")
@@ -944,13 +817,10 @@ def save_account_to_file(fullname, email, password, profile_url, cookies_dict):
         with open(file_path, "a", encoding="utf-8") as f:
             f.write(data)
             
-    except Exception as e:
+    except:
         pass
 
-# ================= RESULT FORMATTING =================
 def format_result(d, success):
-    # ... (giữ nguyên hàm format_result)
-    """Format kết quả để gửi Telegram"""
     now = datetime.datetime.now().strftime("%H:%M:%S | %d/%m/%y")
     user_name = html_escape(d.get('user_name', 'Unknown User'))
 
@@ -997,10 +867,7 @@ def format_result(d, success):
         f"<pre>{footer}</pre>"
     )
 
-# ================= BOT HANDLERS =================
 def handle_start(chat_id, user_name, message_id):
-    # ... (giữ nguyên hàm handle_start)
-    """Xử lý lệnh /start"""
     text = (
         f"<b><i>🎉 Chào mừng {html_escape(user_name)} đã đến!👋</i></b>\n"
         f"<b><i>💌 Hãy sử dụng lệnh /help để xem hướng dẫn!</i></b>"
@@ -1008,8 +875,6 @@ def handle_start(chat_id, user_name, message_id):
     tg_send(chat_id, text, reply_to_message_id=message_id)
 
 def handle_help(chat_id, message_id):
-        
-    """Xử lý lệnh /help - Đã cập nhật thông báo xoá tin nhắn"""
     text = (
         "<b><i> 🧸 ┊‌ NUX BOT XIN CHÀO! ┊‌ 🍰\n"
 "                 ˚༺☆༻</i></b>\n"
@@ -1034,14 +899,10 @@ def handle_help(chat_id, message_id):
 " ₎₎ ๑\n"
 "━━━━━━━━━━━━━━━━\n"
 "␥ 「 ⏱ LƯU Ý: 」 Một số lệnh sẽ tự xoá sau 60 giây\n"
-
     )
     tg_send(chat_id, text, reply_to_message_id=message_id)
 
 def format_myinfo(chat_id, user_info):
-    
-    # ... (giữ nguyên hàm format_myinfo)
-    """Format thông tin user"""
     uid = user_info.get("id")
     full_name = f"{user_info.get('first_name', '')} {user_info.get('last_name', '')}".strip()
     username = user_info.get("username")
@@ -1061,54 +922,37 @@ def format_myinfo(chat_id, user_info):
     return info_text
 
 def handle_myinfo(chat_id, user_info, message_id):
-    """Xử lý lệnh /myinfo - Xóa tin nhắn sau 60 giây"""
     text = format_myinfo(chat_id, user_info)
     sent_msg_id = tg_send(chat_id, text, reply_to_message_id=message_id)
     
     if sent_msg_id:
-        # Tự động xoá sau 60 giây
         threading.Thread(target=self_destruct_message, args=(chat_id, sent_msg_id, message_id, 60), daemon=True).start()
 
 def handle_symbols(chat_id, message_id):
-    """Xử lý lệnh /symbols - Đã sửa đổi và đặt thời gian xoá là 60 giây"""
-    
-    # 1. Gửi thông báo đang lấy
     processing_msg = tg_send(chat_id, "⏱️ Đang lấy...", reply_to_message_id=message_id)
     if not processing_msg:
         return
         
     try:
-        # 2. Lấy symbols
-        print(f"{get_time_tag()} [SYMBOLS] Bắt đầu cào symbols...")
         symbols_line = get_aesthetic_symbols(count=150)
-        print(f"{get_time_tag()} [SYMBOLS] Đã lấy {len(symbols_line.split())} ký tự.")
         
-        # 3. Tạo thông báo kết quả
         if symbols_line:
             result_text = (
                 "✅ <b>THÀNH CÔNG, BÊN DƯỚI LÀ SYMBOLS ĐÃ LẤY!:</b>\n"
                 f"<code>{html_escape(symbols_line)}</code>\n\n"
-                "<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>" # Cập nhật thông báo
+                "<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>"
             )
         else:
              result_text = "❌ <b>LỖI</b>: Không thể cào symbols hoặc API cào lỗi."
 
-        # 4. Chỉnh sửa tin nhắn
         tg_edit(chat_id, processing_msg, result_text)
-        
-        # 5. Tự hủy tin nhắn sau 60s
-        threading.Thread(target=self_destruct_message, args=(chat_id, processing_msg, message_id, 60), daemon=True).start() # Đã sửa thành 60
+        threading.Thread(target=self_destruct_message, args=(chat_id, processing_msg, message_id, 60), daemon=True).start()
 
     except Exception as e:
         error_text = f"❌ Lỗi hệ thống khi lấy symbols: {str(e)[:100]}"
         tg_edit(chat_id, processing_msg, error_text)
-        print(f"{get_time_tag()} [SYMBOLS ERROR] {e}")
-
 
 def handle_checkif(chat_id, user_input, message_id, user_name):
-    """Xử lý lệnh /checkif - Xóa tin nhắn sau 60 giây"""
-
-    # 1. Gửi thông báo đang xử lý (REPLY đúng tin nhắn lệnh)
     processing_msg = tg_send(
         chat_id,
         "⏳ Đang xử lý...",
@@ -1118,26 +962,19 @@ def handle_checkif(chat_id, user_input, message_id, user_name):
         return
 
     try:
-        # 2. Trích UID
         uid = extract_uid_from_input(user_input)
         if not uid:
             tg_edit(chat_id, processing_msg, "❌ Không lấy được UID từ input.")
             return
 
-        # 3. Gọi API lấy info
         api_result = get_fb_info(uid)
 
         if "error" in api_result:
             tg_edit(chat_id, processing_msg, f"❌ {html_escape(api_result['error'])}")
             return
 
-        # 4. Format kết quả
         caption = create_caption(api_result["data"])
-
-        # 5. Edit lại tin nhắn đang xử (GIỮ REPLY CHAIN)
         tg_edit(chat_id, processing_msg, caption)
-
-        # 6. Tự xoá sau 60s (xoá cả lệnh + kết quả)
         threading.Thread(
             target=self_destruct_message,
             args=(chat_id, processing_msg, message_id, 60),
@@ -1151,10 +988,7 @@ def handle_checkif(chat_id, user_input, message_id, user_name):
             f"❌ Lỗi hệ thống: {html_escape(str(e)[:100])}"
         )
 
-# ================= BOT MAIN LOOP =================
 def get_bot_username():
-    # ... (giữ nguyên hàm get_bot_username)
-    """Lấy username của bot"""
     try:
         r = requests.get(f"{API}/getMe", timeout=10).json()
         if r.get("ok") and r.get("result"):
@@ -1190,11 +1024,8 @@ while True:
 
         cmd = text.split()[0]
         
-        # --- BẮT ĐẦU PHẦN KIỂM TRA THÀNH VIÊN NHÓM BẮT BUỘC ---
-        # Bỏ qua check nếu lệnh là /start hoặc /help
         if cmd not in ["/start", f"/start{BOT_USERNAME}", "/help", f"/help{BOT_USERNAME}"]:
             if not check_group_membership(user_id):
-                # Tạo tin nhắn nhắc nhở
                 require_join_msg = (
                     "<b>⚠️ YÊU CẦU THAM GIA GROUP!!!</b>\n"
 "\n"
@@ -1210,21 +1041,17 @@ while True:
 "━━━━━━━━━━━━━━━━\n"
 "␥ Sau khi tham gia group,\n"
 "vui lòng quay lại và sử dụng bot\n"
-
                 )
                 
-                # Gửi tin nhắn và bỏ qua xử lý lệnh
                 sent_msg_id = tg_send(chat_id, require_join_msg, reply_to_message_id=message_id)
-                
-                # Tự hủy tin nhắn sau 60s
                 if sent_msg_id:
                      threading.Thread(target=self_destruct_message, args=(chat_id, sent_msg_id, message_id, 60), daemon=True).start()
                          
-                continue # Bỏ qua xử lý các lệnh khác
-        # --- KẾT THÚC PHẦN KIỂM TRA THÀNH VIÊN NHÓM BẮT BUỘC ---
-        if text.startswith("/"):
-               if block_group_if_needed(chat_id, text, message_id):
                 continue
+
+        if chat_id < 0 and text.startswith('/'):
+            tg_send(chat_id, PRIVATE_ONLY_MSG, reply_to_message_id=message_id)
+            continue
 
         if cmd == "/regfb" or cmd == f"/regfb{BOT_USERNAME}":
             threading.Thread(
@@ -1233,7 +1060,6 @@ while True:
                 daemon=True
             ).start()
         
-        # Xử lý lệnh /checkif
         elif cmd == "/checkif" or cmd == f"/checkif{BOT_USERNAME}":
             args = text.split(maxsplit=1)
             if len(args) < 2:
@@ -1254,7 +1080,6 @@ while True:
         elif text == "/myinfo" or cmd == f"/myinfo{BOT_USERNAME}":
             handle_myinfo(chat_id, user_info, message_id)
         elif text == "/symbols" or cmd == f"/symbols{BOT_USERNAME}":
-            # Chạy trong luồng để không làm block bot
             threading.Thread(
                 target=handle_symbols,
                 args=(chat_id, message_id),
