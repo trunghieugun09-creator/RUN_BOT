@@ -1278,7 +1278,7 @@ while True:
                   PRIVATE_ONLY_MSG,
                   reply_to_message_id=message_id
               )
-        continue
+              continue
         
         if cmd == "/regfb" or cmd == f"/regfb{BOT_USERNAME}":
             threading.Thread(
