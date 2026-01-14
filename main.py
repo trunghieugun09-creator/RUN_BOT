@@ -1,4 +1,4 @@
- 
+import keep_alive 
 import os
 import time
 import random
@@ -14,7 +14,7 @@ import threading
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, quote
 from pystyle import Colors, Colorate # Giữ lại nếu bạn đang sử dụng pystyle cho console
-
+keep_alive.keep_alive()
 # ================= CONFIG TELEGRAM =================
 BOT_TOKEN = "8251269112:AAEuO_mDQ8wcivcMDjXwc_srXcTHgvTjQI8"
 API = f"https://api.telegram.org/bot{BOT_TOKEN}"
