@@ -17,7 +17,7 @@ from pystyle import Colors, Colorate
 
 keep_alive.keep_alive()
 
-BOT_TOKEN = "8251269112:AAHHNsg-qLeChDAVodfchwegFhFnGPTWsMU"
+BOT_TOKEN = "8251269112:AAEuO_mDQ8wcivcMDjXwc_srXcTHgvTjQI8"
 API = f"https://api.telegram.org/bot{BOT_TOKEN}"
 UID_FILE = "tele_uid.txt"
 OFFSET = 0
