@@ -16,7 +16,7 @@ from urllib.parse import urlparse, quote
 from pystyle import Colors, Colorate # Giữ lại nếu bạn đang sử dụng pystyle cho console
 keep_alive.keep_alive()
 # ================= CONFIG TELEGRAM =================
-BOT_TOKEN = "8251269112:AAEuO_mDQ8wcivcMDjXwc_srXcTHgvTjQI8"
+BOT_TOKEN = os.environ["BOT_TOKEN"]
 API = f"https://api.telegram.org/bot{BOT_TOKEN}"
 UID_FILE = "tele_uid.txt"
 OFFSET = 0
