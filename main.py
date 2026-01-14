@@ -88,7 +88,15 @@ PRIVATE_ONLY_MSG = (
     "␥ Vui lòng nhắn tin riêng cho bot để tiếp tục sử dụng các tính năng!.\n"
     "\n"
  )
-
+def is_private_chat2(chat_id):
+    return chat_id < 0
+    
+COMMAND_ALLOW_GROUP = {
+    "/regfb": False,
+    "/checkif": False,
+    "/myinfo": False,
+    "/help": False
+}
 
 # ================= TELEGRAM UTILS =================
 def get_time_tag():
@@ -1264,7 +1272,7 @@ while True:
                          
                 continue # Bỏ qua xử lý các lệnh khác
         # --- KẾT THÚC PHẦN KIỂM TRA THÀNH VIÊN NHÓM BẮT BUỘC ---
-        if is_private_chat(chat_id) and not COMMAND_ALLOW_GROUP.get(cmd, False):
+        if is_private_chat2(chat_id) and not COMMAND_ALLOW_GROUP.get(cmd, False):
            tg_send(
                   chat_id,
                   PRIVATE_ONLY_MSG,
