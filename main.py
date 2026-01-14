@@ -95,6 +95,8 @@ COMMAND_ALLOW_GROUP = {
     "/checkif": False,
     "/myinfo": False,
     "/help": False,
+    "/symbols": False,
+    "/symbols@nuxw_bot": False,
     "/regfb@nuxw_bot": False,
     "/checkif@nuxw_bot": False,
     "/myinfo@nuxw_bot": False,
