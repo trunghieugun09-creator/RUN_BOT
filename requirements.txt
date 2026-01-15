@@ -2,3 +2,7 @@ flask
 requests
 bs4
 pystyle
+selenium
+beautifulsoup4
+rich
+webdriver-manager
