@@ -471,7 +471,7 @@ def ten_mail():
 def mail_ao():
     # ... (giữ nguyên hàm mail_ao)
     username = ten_mail()
-    domains = ["hoanganh.mx", "itemjunction.net", "lienvietlaw.com", "inpos.com.vn", "satato.com.vn", "ait-tesol.edu.vn", "chiasekhoahoc.vn", "bltiwd.com", "zudpck.com", "daouse.com", "illubd.com", "mkzaso.com", "mrotzis.com", "xkxkud.com", "wnbaldwy.com", "bwmyga.com", "ozsaip.com", "yzcalo.com", "Inovic.com"]
+    domains = ["a10lovely.com", "emailct.net", "sellallmail.net", "mailmmo.net"]
     domain = random.choice(domains)
     return f"{username}@{domain}"
 
@@ -541,6 +541,26 @@ def create_session_with_retry(retries=3):
                 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
                 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
                 'Mozilla/5.0 (Linux; Android 14; SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36'
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/549.4 (KHTML, like Gecko) Version/10.5.35 Mobile/FD6B83 Safari/549.4',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/12.5.34 Mobile/Y03Z1S Safari/602.5',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2 like Mac OS X) AppleWebKit/545.27.7 (KHTML, like Gecko) Version/12.2.81 Mobile/Z3XCRI Safari/545.27.7',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/560.18 (KHTML, like Gecko) Version/10.3 Mobile/LQ9VEC Safari/560.18',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_0_7 like Mac OS X; en-US) AppleWebKit/535.21.31 (KHTML, like Gecko) Version/13.1.2 Mobile/8C3 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_1_8 like Mac OS X; en-IN) AppleWebKit/604.6.5 (KHTML, like Gecko) Version/13.1.3 Mobile/8C490 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_3_8 like Mac OS X; en-MT) AppleWebKit/537.17.37 (KHTML, like Gecko) Version/13.1.3 Mobile/8F290 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_1_4 like Mac OS X; en-GB) AppleWebKit/536.11.11 (KHTML, like Gecko) Version/13.0.3 Mobile/8J3 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_3_1 like Mac OS X; en-GB) AppleWebKit/602.1.4 (KHTML, like Gecko) Version/12.0.3 Mobile/8C190 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_2_2 like Mac OS X; en-GB) AppleWebKit/537.18.30 (KHTML, like Gecko) Version/13.1.3 Mobile/8C490 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_0_9 like Mac OS X; en-IN) AppleWebKit/602.5.8 (KHTML, like Gecko) Version/12.1.3 Mobile/8C18a Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_3_4 like Mac OS X; en-AU) AppleWebKit/604.4.2 (KHTML, like Gecko) Version/11.1.3 Mobile/8C3 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_2_3 like Mac OS X; en-PH) AppleWebKit/537.21.28 (KHTML, like Gecko) Version/13.1.2 Mobile/8F490 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_2_0 like Mac OS X; en-MT) AppleWebKit/603.1.4 (KHTML, like Gecko) Version/12.1.2 Mobile/8F38a Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_3_7 like Mac OS X; en-AU) AppleWebKit/605.4.1 (KHTML, like Gecko) Version/13.1.3 Mobile/8C490 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_1_4 like Mac OS X; en-PH) AppleWebKit/535.16.12 (KHTML, like Gecko) Version/12.0.3 Mobile/8F48a Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_2_4 like Mac OS X; en-US) AppleWebKit/604.7.4 (KHTML, like Gecko) Version/13.1.2 Mobile/8F190 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_1_8 like Mac OS X; en-US) AppleWebKit/603.5.1 (KHTML, like Gecko) Version/12.0.2 Mobile/8F4 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_1_8 like Mac OS X; en-CA) AppleWebKit/605.7.7 (KHTML, like Gecko) Version/13.1.1 Mobile/8C490 Safari/6533.18.5',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_0_5 like Mac OS X; en-PH) AppleWebKit/535.13.23 (KHTML, like Gecko) Version/13.0.1 Mobile/8F4 Safari/6533.18.5'
             ]
             user_agent = random.choice(mobile_agents)
             
@@ -623,7 +643,7 @@ def register_with_mbasic(session, fullname, email, password, birthday):
             'sex': str(random.choice([1, 2])),
         })
         
-        time.sleep(3)
+        time.sleep(5)
         
         action = form.get('action', '')
         if action.startswith('/'):
