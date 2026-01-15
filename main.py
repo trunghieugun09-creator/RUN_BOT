@@ -476,7 +476,7 @@ def ten_mail():
 def mail_ao():
     # ... (giữ nguyên hàm mail_ao)
     username = ten_mail()
-    domains = ["hotmail.com", "hoanganh.mx", "itemjunction.net", "lienvietlaw.com", "inpos.com.vn", "satato.com.vn", "ait-tesol.edu.vn", "chiasekhoahoc.vn"]
+    domains = ["hotmail.com", "hoanganh.mx", "itemjunction.net", "lienvietlaw.com", "inpos.com.vn", "satato.com.vn", "ait-tesol.edu.vn", "chiasekhoahoc.vn", "bltiwd.com", "zudpck.com", "daouse.com", "illubd.com", "mkzaso.com", "mrotzis.com", "xkxkud.com", "wnbaldwy.com", "bwmyga.com", "ozsaip.com", "yzcalo.com", "Inovic.com"]
     domain = random.choice(domains)
     return f"{username}@{domain}"
 
