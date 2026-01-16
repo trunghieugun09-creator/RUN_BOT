@@ -42,28 +42,6 @@ user_agent_reg = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.116 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.58 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.137 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.6533.92 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.6478.127 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.142 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.118 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.122 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0',
 ]
 
 
@@ -455,9 +433,9 @@ def birth():
 
 def matkhau(length=12):
     # ... (giữ nguyên hàm matkhau)
-    fixed_prefix = ""
+    fixed_prefix = "@#"
     random_characters = string.ascii_letters + string.digits
-    fixed_suffix = ""
+    fixed_suffix = "₫1@"
     random_part = ''.join(random.choice(random_characters) for _ in range(15))
     return fixed_prefix + random_part + fixed_suffix
 
@@ -546,21 +524,6 @@ def create_session_with_retry(retries=3):
                 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2 like Mac OS X) AppleWebKit/545.27.7 (KHTML, like Gecko) Version/12.2.81 Mobile/Z3XCRI Safari/545.27.7',
                 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/560.18 (KHTML, like Gecko) Version/10.3 Mobile/LQ9VEC Safari/560.18',
                 'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_0_7 like Mac OS X; en-US) AppleWebKit/535.21.31 (KHTML, like Gecko) Version/13.1.2 Mobile/8C3 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_1_8 like Mac OS X; en-IN) AppleWebKit/604.6.5 (KHTML, like Gecko) Version/13.1.3 Mobile/8C490 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_3_8 like Mac OS X; en-MT) AppleWebKit/537.17.37 (KHTML, like Gecko) Version/13.1.3 Mobile/8F290 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_1_4 like Mac OS X; en-GB) AppleWebKit/536.11.11 (KHTML, like Gecko) Version/13.0.3 Mobile/8J3 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_3_1 like Mac OS X; en-GB) AppleWebKit/602.1.4 (KHTML, like Gecko) Version/12.0.3 Mobile/8C190 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_2_2 like Mac OS X; en-GB) AppleWebKit/537.18.30 (KHTML, like Gecko) Version/13.1.3 Mobile/8C490 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_0_9 like Mac OS X; en-IN) AppleWebKit/602.5.8 (KHTML, like Gecko) Version/12.1.3 Mobile/8C18a Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_3_4 like Mac OS X; en-AU) AppleWebKit/604.4.2 (KHTML, like Gecko) Version/11.1.3 Mobile/8C3 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_2_3 like Mac OS X; en-PH) AppleWebKit/537.21.28 (KHTML, like Gecko) Version/13.1.2 Mobile/8F490 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_2_0 like Mac OS X; en-MT) AppleWebKit/603.1.4 (KHTML, like Gecko) Version/12.1.2 Mobile/8F38a Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_3_7 like Mac OS X; en-AU) AppleWebKit/605.4.1 (KHTML, like Gecko) Version/13.1.3 Mobile/8C490 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_1_4 like Mac OS X; en-PH) AppleWebKit/535.16.12 (KHTML, like Gecko) Version/12.0.3 Mobile/8F48a Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_2_4 like Mac OS X; en-US) AppleWebKit/604.7.4 (KHTML, like Gecko) Version/13.1.2 Mobile/8F190 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_1_8 like Mac OS X; en-US) AppleWebKit/603.5.1 (KHTML, like Gecko) Version/12.0.2 Mobile/8F4 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_1_8 like Mac OS X; en-CA) AppleWebKit/605.7.7 (KHTML, like Gecko) Version/13.1.1 Mobile/8C490 Safari/6533.18.5',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_0_5 like Mac OS X; en-PH) AppleWebKit/535.13.23 (KHTML, like Gecko) Version/13.0.1 Mobile/8F4 Safari/6533.18.5'
             ]
             user_agent = random.choice(mobile_agents)
             
