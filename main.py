@@ -30,7 +30,7 @@ MANDATORY_GROUP_TITLE = "𝗣𝗮𝗿𝗮𝗴𝗼𝗻 𝗦𝗲𝗹 ᵎ!ᵎ 𝐟�
 
 # ================= CONFIG REGISTRATION =================
 proxy_reg = [
-    ""
+    "sp06v4-01.proxymmo.me:20393:sp06v405-20393:PDQLU"
 ]
 
 user_agent_reg = [
