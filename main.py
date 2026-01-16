@@ -455,10 +455,10 @@ def birth():
 
 def matkhau(length=12):
     # ... (giữ nguyên hàm matkhau)
-    fixed_prefix = "tghieux#!"
+    fixed_prefix = ""
     random_characters = string.ascii_letters + string.digits
-    fixed_suffix = "#@!₫"
-    random_part = ''.join(random.choice(random_characters) for _ in range(11))
+    fixed_suffix = ""
+    random_part = ''.join(random.choice(random_characters) for _ in range(15))
     return fixed_prefix + random_part + fixed_suffix
 
 
