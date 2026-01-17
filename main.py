@@ -1,2 +1,1091 @@
-_ = lambda __ : __import__('zlib').decompress(__import__('base64').b64decode(__[::-1]));
-exec((_)(b'==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'))
+import keep_alive 
+import os
+import time
+import random
+import string
+import datetime
+import requests
+import re
+import json
+import platform
+import sys
+import threading
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse, quote
+from pystyle import Colors, Colorate
+keep_alive.keep_alive()
+
+# ================= CONFIG TELEGRAM =================
+BOT_TOKEN = "8251269112:AAEuO_mDQ8wcivcMDjXwc_srXcTHgvTjQI8"  # ĐÃ THAY TOKEN
+API = f"https://api.telegram.org/bot{BOT_TOKEN}"
+UID_FILE = "tele_uid.txt"
+OFFSET = 0
+REG_DELAY = 10
+LAST_REG_TIME = {}
+RUNNING_CHAT = set()
+
+# THÊM CẤU HÌNH NHÓM BẮT BUỘC THAM GIA - ĐÃ THAY ID GROUP
+MANDATORY_GROUP_ID = -1003444341292 
+MANDATORY_GROUP_TITLE = "𝗣𝗮𝗿𝗮𝗴𝗼𝗻 𝗦𝗲𝗹 ᵎ!ᵎ 𝐟𝐫𝐬 𝐜𝐨𝐝𝐞"
+
+# ================= CONFIG REGISTRATION =================
+proxy_reg = [
+    "sp06v4-01.proxymmo.me:20393:sp06v405-20393:PDQLU"
+]
+
+user_agent_reg = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+]
+
+window = platform.system().lower().startswith("win")
+thu_muc_luu = "accounts_output"
+os.makedirs(thu_muc_luu, exist_ok=True)
+
+# ================= CONFIG CHECK INFO =================
+API_KEY = "apikeysumi"
+API_INFO_URL = "https://adidaphat.site/facebook/getinfo"
+UID_API_URL = "https://keyherlyswar.x10.mx/Apidocs/getuidfb.php?link="
+
+# ================= HUMAN-LIKE TYPING EFFECT =================
+def human_type_effect(text, element_name="form"):
+    """Hiệu ứng gõ chữ như người thật"""
+    if not text:
+        return
+    
+    max_total_time = 15.0
+    avg_time_per_char = min(0.2, max_total_time / max(len(text), 1))
+    
+    typed = ""
+    for char in text:
+        typed += char
+        
+        if char.isalpha() or char.isdigit():
+            delay = random.uniform(0.05, 0.15)
+        elif char in ' .,;:!?':
+            delay = random.uniform(0.1, 0.25)
+        else:
+            delay = random.uniform(0.08, 0.18)
+        
+        delay = min(delay, avg_time_per_char * 1.5)
+        time.sleep(delay)
+    
+    time.sleep(random.uniform(0.3, 0.8))
+    return typed
+
+def is_private_chat(chat_id):
+    return chat_id > 0
+    
+PRIVATE_ONLY_MSG = (
+    "<b>⛔ LƯU Ý TỪ BOT!!!</b>\n"
+    "━━━━━━━━━━━━━━━━\n"
+    "␥ <b><i>Bot chỉ hoạt động trong Tin nhắn riêng (Private), không hỗ trợ sử dụng trong group!.</i></b>\n"
+    "␥ Vui lòng nhắn tin riêng cho bot để tiếp tục sử dụng các tính năng!.\n"
+    "\n"
+ )
+
+COMMAND_ALLOW_GROUP = {
+    "/start": True,
+    "/regfb": False,
+    "/checkif": False,
+    "/myinfo": False,
+    "/help": False,
+    "/symbols": False,
+    "/symbols@nuxw_bot": False,
+    "/regfb@nuxw_bot": False,
+    "/checkif@nuxw_bot": False,
+    "/myinfo@nuxw_bot": False,
+    "/help@nuxw_bot": False,
+    "/start@nuxw_bot": True
+}
+
+# ================= TELEGRAM UTILS =================
+def block_group_if_needed(chat_id, text, message_id):
+    if chat_id < 0:
+        cmd = text.split()[0].lower()
+        if cmd in COMMAND_ALLOW_GROUP and not COMMAND_ALLOW_GROUP[cmd]:
+            tg_send(chat_id, PRIVATE_ONLY_MSG, reply_to_message_id=message_id)
+            return True
+    return False
+
+def get_time_tag():
+    return datetime.datetime.now().strftime("[%H:%M:%S]")
+
+def html_escape(s):
+    if s is None:
+        s = "None"
+    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+def tg_send(chat_id, text, parse_mode="HTML", reply_to_message_id=None):
+    data = {"chat_id": chat_id, "text": text, "parse_mode": parse_mode}
+    if reply_to_message_id:
+        data["reply_to_message_id"] = reply_to_message_id
+
+    try:
+        r = requests.post(
+            f"{API}/sendMessage",
+            data=data,
+            timeout=15
+        ).json()
+        return r.get("result", {}).get("message_id")
+    except:
+        return None
+
+def tg_edit(chat_id, msg_id, text, parse_mode="HTML"):
+    try:
+        requests.post(
+            f"{API}/editMessageText",
+            data={"chat_id": chat_id, "message_id": msg_id, "text": text, "parse_mode": parse_mode},
+            timeout=10
+        )
+    except:
+        pass
+
+def tg_delete_message(chat_id, message_id):
+    try:
+        requests.post(
+            f"{API}/deleteMessage",
+            data={"chat_id": chat_id, "message_id": message_id},
+            timeout=10
+        )
+    except:
+        pass
+
+def get_updates():
+    global OFFSET
+    try:
+        r = requests.get(f"{API}/getUpdates", params={"offset": OFFSET, "timeout": 30}, timeout=35).json()
+        if r.get("result"):
+            OFFSET = r["result"][-1]["update_id"] + 1
+            return r["result"]
+    except:
+        pass
+    return []
+
+def self_destruct_message(chat_id, sent_msg_id, original_msg_id, delay=120):
+    """Tự động xoá tin nhắn sau delay"""
+    time.sleep(delay)
+    tg_delete_message(chat_id, sent_msg_id)
+    tg_delete_message(chat_id, original_msg_id)
+
+def check_group_membership(user_id):
+    """Kiểm tra xem người dùng có phải là thành viên của MANDATORY_GROUP_ID không."""
+    global MANDATORY_GROUP_ID, API
+    if not MANDATORY_GROUP_ID:
+        return True
+        
+    try:
+        url = f"{API}/getChatMember"
+        params = {
+            "chat_id": MANDATORY_GROUP_ID,
+            "user_id": user_id
+        }
+        r = requests.get(url, params=params, timeout=15).json()
+        
+        status = r.get("result", {}).get("status")
+        
+        if status in ["creator", "administrator", "member", "restricted"]: 
+            return True
+        else:
+            return False
+            
+    except Exception as e:
+        print(f"{get_time_tag()} [GROUP CHECK ERROR] {e}")
+        return False
+
+# ================= SAFE HELPER =================
+def safe_int(n):
+    """Chuyển đổi sang số nguyên, trả về 0 nếu thất bại."""
+    try:
+        return int(n)
+    except (ValueError, TypeError):
+        return 0
+
+def format_number(n):
+    """Định dạng số có dấu phẩy."""
+    return format(safe_int(n), ",")
+
+def format_created(time_str):
+    """Định dạng lại chuỗi thời gian 'dd/mm/yyyy||hh:mm:ss'"""
+    try:
+        parts = re.split(r'\|\||\s*\|\s*', time_str.strip())
+        if len(parts) >= 2:
+            d, t = parts[0], parts[1]
+            return f"{t} | {d}"
+        return time_str.replace("||", " | ")
+    except:
+        return "Không rõ"
+        
+def extract_uid_from_input(input_str):
+    """Trích xuất UID từ input"""
+    input_str = input_str.strip()
+    
+    if input_str.isdigit():
+        return input_str
+    
+    try:
+        url_encoded = quote(input_str)
+        res = requests.get(UID_API_URL + url_encoded, timeout=10).json()
+        
+        if res.get("status") == "success" and "uid" in res:
+            return res["uid"]
+        else:
+            return None
+    except Exception as e:
+        print(f"Lỗi khi lấy UID từ link: {e}")
+        return None
+
+def get_fb_info(uid):
+    """Lấy thông tin Facebook từ UID"""
+    try:
+        url = f"{API_INFO_URL}?uid={uid}&apikey={API_KEY}"
+        print(f"{get_time_tag()} 🔗 Gọi API: {url}")
+        
+        r = requests.get(url, timeout=15)
+        
+        try:
+            res = r.json()
+        except requests.exceptions.JSONDecodeError:
+            return {"error": f"API lỗi: Phản hồi không phải JSON. Code: {r.status_code}\nNội dung: {r.text[:200]}"}
+
+        if not isinstance(res, dict):
+            return {"error": f"Dữ liệu trả về không hợp lệ: {type(res)}"}
+
+        if 'error' in res:
+            error_msg = res.get('error', 'Lỗi không xác định từ API')
+            return {"error": f"API lỗi: {error_msg}"}
+        
+        if 'success' in res and not res['success']:
+            error_msg = res.get('message', 'Lỗi không xác định từ API')
+            return {"error": f"API lỗi: {error_msg}"}
+
+        if not res.get('name') and not res.get('uid'):
+            return {"error": "API trả về dữ liệu trống hoặc không hợp lệ"}
+
+        return {"success": True, "data": res}
+        
+    except requests.exceptions.Timeout:
+        return {"error": "Timeout: API không phản hồi sau 15 giây"}
+    except requests.exceptions.ConnectionError:
+        return {"error": "Lỗi kết nối: Không thể kết nối đến API"}
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Lỗi kết nối mạng: {e.__class__.__name__}"}
+    except Exception as e:
+        return {"error": f"Lỗi hệ thống: {e.__class__.__name__}: {str(e)}"}
+
+def create_caption(res):
+    """Tạo caption từ dữ liệu API"""
+    uid = res.get('uid', 'Không rõ')
+    
+    caption = (
+        "╭─────────────⭓\n"
+        f"│ 𝗡𝗮𝗺𝗲: <b>{html_escape(res.get('name','Không rõ'))}</b>\n"
+        f"│ 𝗨𝗜𝗗: <code>{html_escape(uid)}</code>\n"
+        f"│ 𝗨𝘀𝗲𝗿𝗡𝗮𝗺𝗲: {html_escape(res.get('username','Không rõ'))}\n"
+        f"│ 𝗟𝗶𝗻𝗸: <a href=\"{res.get('link_profile', f'https://facebook.com/{uid}')}\">Xem Profile</a>\n"
+    )
+    
+    if 'follower' in res:
+        caption += f"│ 𝗙𝗼𝗹𝗹𝗼𝘄𝗲𝗿𝘀: {format_number(res.get('follower'))} Người theo dõi\n"
+    
+    if 'created_time' in res:
+        caption += f"│ 𝗖𝗿𝗲𝗮𝘁𝗲𝗱: {format_created(res.get('created_time',''))}\n"
+    
+    if 'tichxanh' in res:
+        caption += f"│ 𝗩𝗲𝗿𝗶𝗳𝗶𝗲𝗱: {'Đã xác minh ✅' if res.get('tichxanh') else 'Chưa xác minh ❌'}\n"
+    
+    if 'relationship_status' in res:
+        caption += f"│ 𝗦𝘁𝗮𝘁𝘂𝘀: {html_escape(res.get('relationship_status','Không rõ'))}\n"
+
+    love = res.get("love")
+    if isinstance(love, dict) and love.get("name"):
+        caption += (
+            f"│ -> 💍 Đã kết hôn với: {html_escape(love.get('name'))}\n"
+            f"│ -> 🔗 Link UID: https://facebook.com/{love.get('id')}\n"
+        )
+
+    if 'about' in res:
+        bio = res.get('about', 'Không có dữ liệu!')
+        caption += f"│ 𝗕𝗶𝗼: {html_escape(bio[:200])}{'...' if len(bio) > 200 else ''}\n"
+    
+    if 'gender' in res:
+        gender = res.get('gender','Không rõ')
+        caption += f"│ 𝗚𝗲𝗻𝗱𝗲𝗿: {html_escape(gender.capitalize() if isinstance(gender, str) else gender)}\n"
+    
+    if 'hometown' in res:
+        caption += f"│ 𝗛𝗼𝗺𝗲𝘁𝗼𝘄𝗻: {html_escape(res.get('hometown','Không rõ'))}\n"
+    
+    if 'location' in res:
+        caption += f"│ 𝗟𝗼𝗰𝗮𝘁𝗶𝗼𝗻: {html_escape(res.get('location','Không rõ'))}\n"
+    
+    work_data = res.get("work", [])
+    if work_data:
+        caption += f"│ 𝗪𝗼𝗿𝗸:\n"
+        work_found = False
+        for w in work_data:
+            if not isinstance(w, dict):
+                continue
+            employer = w.get("employer", {}).get("name")
+            position = w.get("position", {}).get("name")
+            
+            if employer:
+                work_found = True
+                if position:
+                    caption += f"│ -> {html_escape(position)}: {html_escape(employer)}\n"
+                else:
+                    caption += f"│ -> Làm việc tại: {html_escape(employer)}\n"
+        
+        if not work_found:
+             caption += f"│ -> Không có dữ liệu công việc.\n"
+    else:
+        caption += f"│ 𝗪𝗼𝗿𝗸: Không có dữ liệu\n"
+
+    caption += (
+        "├─────────────⭓\n"
+        f"│ 𝗧𝗶𝗺𝗲 𝗨𝗽𝗱𝗮𝘁𝗲: <b>{datetime.datetime.now().strftime('%H:%M:%S | %d/%m/%Y')}</b>\n"
+        "╰─────────────⭓"
+    )
+    
+    return caption
+
+# ================= REGISTRATION FUNCTIONS =================
+def parse_proxy(proxy_str):
+    """Parse proxy string"""
+    try:
+        if not proxy_str:
+            return None
+            
+        if proxy_str.startswith(('http://', 'https://', 'socks4://', 'socks5://')):
+            return proxy_str
+            
+        if proxy_str.startswith('['):
+            ipv6_end = proxy_str.find(']')
+            if ipv6_end == -1:
+                return f"http://{proxy_str}"
+            
+            ipv6_part = proxy_str[:ipv6_end+1]
+            rest = proxy_str[ipv6_end+1:]
+            
+            if rest.startswith(':'):
+                rest = rest[1:]
+            
+            parts = rest.split(':')
+            
+            if len(parts) >= 1:
+                port = parts[0]
+                if len(parts) >= 3:
+                    username = parts[1]
+                    password = parts[2]
+                    parsed = f"http://{username}:{password}@{ipv6_part}:{port}"
+                else:
+                    parsed = f"http://{ipv6_part}:{port}"
+                return parsed
+        
+        parts = proxy_str.split(':')
+        
+        if len(parts) == 4:
+            host, port, username, password = parts
+            parsed = f"http://{username}:{password}@{host}:{port}"
+        elif len(parts) == 2:
+            host, port = parts
+            parsed = f"http://{host}:{port}"
+        else:
+            parsed = f"http://{proxy_str}"
+        
+        return parsed
+        
+    except Exception as e:
+        return proxy_str
+
+def get_proxy_for_account():
+    """Lấy proxy ngẫu nhiên"""
+    if not proxy_reg:
+        return None
+        
+    proxy_str = random.choice(proxy_reg)
+    parsed_proxy = parse_proxy(proxy_str)
+    return parsed_proxy
+
+def get_random_user_agent():
+    return random.choice(user_agent_reg)
+
+def ten_gha():
+    first = ["Bạch","Uyển","Cố","Sở","Trạch","Lam","Thanh","Mặc","Kim","Thiên","Hồng","Kính","Thủy","Kiều","Minh","Nhật","Băng","Hải","Tâm","Phi"]
+    mid = ["Vũ","Hạ","Tỉnh","Vân","Khúc","Ảnh","Huyết","Vô","Tuyệt","Mệnh","Ngản","Ngạn","Bi","Lưu","Tĩnh","Lộ","Phong","Tư","Khiết","Vĩ"]
+    last = ["Khách","Xuẫn","Nghi","Ninh","Nhạn","Quân","Hiên","Lâm"]
+    return f"{random.choice(first)} {random.choice(mid)} {random.choice(last)}"
+
+def birth():
+    year = random.randint(1995, 2004)
+    month = random.randint(1, 12)
+    day = random.randint(1, 28)
+    return f"{day:02d}/{month:02d}/{year}"
+
+def matkhau(length=12):
+    fixed_prefix = "@#"
+    random_characters = string.ascii_letters + string.digits
+    fixed_suffix = "₫1@"
+    random_part = ''.join(random.choice(random_characters) for _ in range(15))
+    return fixed_prefix + random_part + fixed_suffix
+
+def ten_mail():
+    chars = string.ascii_lowercase + string.digits
+    username = ''.join(random.choice(chars) for _ in range(8))
+    return username
+
+def mail_ao():
+    username = ten_mail()
+    domains = ["hotmail.com", "gmail.com", "outlook.com", "outlook.com.vn"]
+    domain = random.choice(domains)
+    return f"{username}@{domain}"
+
+def decode_response_content(response):
+    """Decode response content với encoding đúng - FIX tiếng Việt"""
+    try:
+        # Thử UTF-8 trước
+        try:
+            content = response.content.decode('utf-8', errors='ignore')
+            return content
+        except:
+            pass
+            
+        # Thử các encoding tiếng Việt
+        viet_encodings = ['windows-1258', 'cp1258', 'utf-8-sig', 'iso-8859-1']
+        for encoding in viet_encodings:
+            try:
+                return response.content.decode(encoding, errors='ignore')
+            except:
+                continue
+        
+        # Fallback
+        return response.text if hasattr(response, 'text') else str(response.content)
+    except:
+        return str(response.content)
+
+def create_session_with_retry(retries=3):
+    """Tạo session với proxy - headers đầy đủ"""
+    proxy_str = get_proxy_for_account()
+    
+    for attempt in range(retries):
+        try:
+            session = requests.Session()
+            user_agent = get_random_user_agent()
+            
+            # Headers đầy đủ
+            session.headers.update({
+                'User-Agent': user_agent,
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Sec-Fetch-User': '?1',
+                'Cache-Control': 'max-age=0',
+                'DNT': '1',
+            })
+            
+            if proxy_str:
+                session.proxies.update({
+                    'http': proxy_str,
+                    'https': proxy_str
+                })
+            
+            time.sleep(random.uniform(2.0, 3.0))
+                
+            # Thử mbasic.facebook.com (nhẹ hơn)
+            response = session.get("https://www.facebook.com/reg/", timeout=30)
+            
+            if response.status_code == 200:
+                content = decode_response_content(response)
+                if 'sign up' in content.lower() or 'đăng ký' in content.lower():
+                    return session
+
+        except Exception as e:
+            print(f"{get_time_tag()} [ERROR] Session attempt {attempt+1} failed: {e}")
+            time.sleep(3)
+    
+    raise Exception("Không thể tạo session")
+
+def extract_form_fields_with_csrf(soup):
+    """Trích xuất form và fields kèm CSRF token"""
+    forms = soup.find_all('form')
+    if not forms:
+        return None, {}
+    
+    reg_form = None
+    for form in forms:
+        form_html = str(form).lower()
+        if any(keyword in form_html for keyword in ['register', 'sign up', 'đăng ký']):
+            reg_form = form
+            break
+    
+    if not reg_form:
+        # Lấy form đầu tiên có action
+        for form in forms:
+            if form.get('action'):
+                reg_form = form
+                break
+        
+        if not reg_form:
+            reg_form = forms[0]
+    
+    fields = {}
+    
+    # Lấy tất cả input fields
+    for inp in reg_form.find_all('input'):
+        name = inp.get('name')
+        value = inp.get('value', '')
+        if name and name not in ['', 'submit', 'cancel']:
+            fields[name] = value
+    
+    # Tìm các token quan trọng
+    important_fields = ['fb_dtsg', 'jazoest', 'lsd', 'li', '__a', '__req']
+    for inp in reg_form.find_all('input'):
+        name = inp.get('name', '')
+        value = inp.get('value', '')
+        if name in important_fields and value:
+            fields[name] = value
+    
+    print(f"{get_time_tag()} [DEBUG] Found {len(fields)} form fields")
+    return reg_form, fields
+
+def register_with_mbasic(session, fullname, email, password, birthday, chat_id, msg_id, update_func):
+    """Đăng ký Facebook - FIX lỗi encoding"""
+    try:
+        time.sleep(random.uniform(2.0, 3.0))
+        
+        update_func(chat_id, msg_id, f"{get_time_tag()} 🌐 Đang tải trang đăng ký...")
+        
+        # Dùng mbasic.facebook.com (ít JavaScript hơn)
+        response = session.get("https://mbasic.facebook.com/reg/", timeout=30)
+        
+        if response.status_code != 200:
+            return False, f"HTTP Error {response.status_code}", None, response
+        
+        print(f"{get_time_tag()} [DEBUG] Loaded registration page")
+        
+        content = decode_response_content(response)
+        
+        time.sleep(random.uniform(1.5, 2.5))
+        
+        soup = BeautifulSoup(content, 'html.parser')
+        form, fields = extract_form_fields_with_csrf(soup)
+        
+        if not form:
+            return False, "Không tìm thấy form đăng ký", None, response
+        
+        parts = fullname.split()
+        firstname = parts[0]
+        lastname = " ".join(parts[1:]) if len(parts) > 1 else parts[0]
+        day, month, year = birthday.split("/")
+
+        # Thêm thông tin vào fields
+        fields.update({
+            'firstname': firstname,
+            'lastname': lastname,
+            'reg_email__': email,
+            'reg_email_confirmation__': email,
+            'reg_passwd__': password,
+            'birthday_day': day,
+            'birthday_month': month,
+            'birthday_year': year,
+            'sex': str(random.choice([1, 2])),  # 1: female, 2: male
+        })
+        
+        # Lấy action URL
+        action = form.get('action', '')
+        if not action or action == '#':
+            action = '/reg/'
+            
+        if action.startswith('/'):
+            action_url = 'https://mbasic.facebook.com' + action
+        else:
+            action_url = action
+        
+        print(f"{get_time_tag()} [DEBUG] Submitting to: {action_url}")
+        
+        update_func(chat_id, msg_id, f"{get_time_tag()} 📤 Đang gửi đơn đăng ký...")
+        
+        # Thêm referer
+        session.headers.update({'Referer': 'https://mbasic.facebook.com/reg/'})
+        
+        # Gửi form với timeout dài
+        response = session.post(action_url, data=fields, timeout=45, allow_redirects=True)
+        
+        
+        time.sleep(random.uniform(3.0, 4.0))
+        
+        # Lấy cookies
+        cookies_dict = {}
+        for cookie in session.cookies:
+            cookies_dict[cookie.name] = cookie.value
+        
+        uid = cookies_dict.get('c_user', '0')
+        
+        content = decode_response_content(response)
+          
+        # Kiểm tra kết quả
+        if uid and uid != '0':
+            return True, "Thành công", uid, response
+            
+        elif any(keyword in content.lower() for keyword in ['confirm', 'xác nhận', 'mã', 'code', 'email sent']):
+            return True, "Cần xác nhận email", uid, response
+            
+        elif 'checkpoint' in response.url.lower():
+            return True, "Cần xác minh bảo mật", uid, response
+            
+        elif 'error' in content.lower():
+            # Tìm thông báo lỗi
+            soup2 = BeautifulSoup(content, 'html.parser')
+            error_div = soup2.find('div', class_=re.compile(r'error|alert|warning'))
+            if error_div:
+                error_text = error_div.get_text(strip=True)[:100]
+                return False, f"Lỗi: {error_text}", uid, response
+            else:
+                return False, "Facebook báo lỗi", uid, response
+        else:
+            return False, "Không xác định được kết quả", uid, response
+
+    except Exception as e:
+        return False, f"Lỗi: {str(e)[:100]}", None  
+
+def get_account_cookies(session):
+    """Lấy cookies từ session"""
+    cookies = {}
+    try:
+        for cookie in session.cookies:
+            cookies[cookie.name] = cookie.value
+    except Exception as e:
+        pass
+    return cookies
+
+def cookies_to_string(cookies_dict):
+    """Chuyển cookies dict thành string"""
+    if not cookies_dict:
+        return "Không có"
+    selected_cookies = {}
+    if 'c_user' in cookies_dict:
+        selected_cookies['c_user'] = cookies_dict['c_user']
+    if 'xs' in cookies_dict:
+        selected_cookies['xs'] = cookies_dict['xs']
+    if 'fr' in cookies_dict:
+        selected_cookies['fr'] = cookies_dict['fr']
+    if 'datr' in cookies_dict:
+        selected_cookies['datr'] = cookies_dict['datr']
+    if not selected_cookies:
+        return "Không có cookie quan trọng"
+    cookie_str = "; ".join([f"{k}={v}" for k, v in selected_cookies.items()])
+    return cookie_str
+
+# ================= DEBUG FUNCTIONS =================
+
+# ================= MAIN REGISTRATION FUNCTION =================
+def reg_single_account(chat_id, user_id, user_name, message_id):
+    """Hàm chính đăng ký account"""
+    if chat_id in RUNNING_CHAT:
+        tg_send(chat_id, "⏱️ Đợi lệnh kia chạy xong đã.", reply_to_message_id=message_id)
+        return
+
+    now = time.time()
+    last = LAST_REG_TIME.get(user_id, 0) 
+    if now - last < REG_DELAY:
+        wait = int(REG_DELAY - (now - last))
+        tg_send(chat_id, f"⏱️ Cỡ {wait}s nữa mới được reg tiếp.", reply_to_message_id=message_id)
+        return
+
+    LAST_REG_TIME[user_id] = now
+    RUNNING_CHAT.add(chat_id)
+
+    msg_id = tg_send(chat_id, f"{get_time_tag()} 🚀 Bắt đầu reg...", reply_to_message_id=message_id) 
+    if not msg_id:
+        RUNNING_CHAT.remove(chat_id)
+        return
+
+    session = None
+    try:
+        tg_edit(chat_id, msg_id, f"{get_time_tag()} ⏳ Đang chuẩn bị thông tin...")
+        time.sleep(random.uniform(1.0, 2.0))
+        
+        fullname = ten_gha()
+        email = mail_ao()
+        password = matkhau()
+        birthday = birth()
+
+        tg_edit(chat_id, msg_id, f"{get_time_tag()} 🌐 Đang kết nối...")
+        time.sleep(random.uniform(1.5, 2.5))
+        session = create_session_with_retry()
+
+        success, message, uid, debug_response = register_with_mbasic(
+            session, fullname, email, password, birthday, 
+            chat_id, msg_id, tg_edit
+        )
+
+        cookies_dict = get_account_cookies(session)
+        cookie_str = cookies_to_string(cookies_dict)
+        
+        profile_url = f"https://www.facebook.com/profile.php?id={uid}" if uid and uid != '0' else None
+        
+        # Xác định trạng thái
+        if success:
+            if uid and uid != '0':
+                status = f"✅ Thành công"
+                is_live = True
+                reg_status = "success"
+            else:
+                status = f"⚠️ {message}"
+                is_live = False
+                reg_status = "need_confirm"
+        else:
+            status = f"❌ {message}"
+            is_live = False
+            reg_status = "failed"
+
+        result = {
+            "name": fullname,
+            "email": email,
+            "password": password,
+            "status": status,
+            "uid": uid or "0",
+            "cookies": cookie_str,
+            "user_name": user_name,
+            "is_live": is_live,
+            "reg_status": reg_status,
+            "message": message
+        }
+
+        tg_edit(chat_id, msg_id, format_result(result, success))
+        
+        
+        # Lưu account nếu có UID thực
+        if uid and uid != '0':
+            save_account_to_file(fullname, email, password, profile_url, cookies_dict)
+
+    except Exception as e:
+        error_result = {
+            "user_name": user_name,
+            "status": f"❌ Lỗi hệ thống: {str(e)[:50]}"
+        }
+        tg_edit(chat_id, msg_id, format_result(error_result, False))
+        print(f" {get_time_tag()} [LỖI] {e}")
+
+    finally:
+        RUNNING_CHAT.remove(chat_id)
+        if session:
+            try:
+                session.close()
+            except:
+                pass
+
+def save_account_to_file(fullname, email, password, profile_url, cookies_dict):
+    """Lưu account vào file"""
+    try:
+        now = datetime.datetime.now()
+        date_str = now.strftime("%d-%m-%y")
+        file_path = os.path.join(thu_muc_luu, f"acc_nvery_{date_str}.txt")
+        
+        uid = cookies_dict.get('c_user', '0')
+        
+        data = f"""╭─────{'-'*25}─────⭓
+│ 👤 Tên: {fullname}
+│ 📧 Email: {email}
+│ 🔑 Pass: {password}
+│ 🆔 UID: {uid}
+│ 🔗 Profile: {profile_url or "Không có"}
+│ 🍪 Cookies: {cookies_to_string(cookies_dict)}
+│ ⏰ Time: {now.strftime('%H:%M:%S %d/%m/%Y')}
+╰─────{'-'*25}─────⭓
+
+"""
+        
+        with open(file_path, "a", encoding="utf-8") as f:
+            f.write(data)
+            
+    except Exception as e:
+        pass
+
+# ================= RESULT FORMATTING =================
+def format_result(d, success):
+    """Format kết quả để gửi Telegram"""
+    now = datetime.datetime.now().strftime("%H:%M:%S | %d/%m/%y")
+    user_name = html_escape(d.get('user_name', 'Unknown User'))
+
+    if not success:
+        return (
+            f"👤 Người sử dụng bot: <b>{user_name}</b>\n"
+            f"❌ Reg thất bại\n"
+            f"⏰ {now}\n"
+            f"Lỗi: {html_escape(d.get('status', 'Không xác định'))}\n"
+            f"<i>Đã gửi file debug để phân tích</i>"
+        )
+
+    is_live = d.get('is_live', False)
+    status_color = "🟢" if is_live else "🔴"
+    
+    for k in ["name", "email", "password", "status", "uid", "cookies"]:
+        if k not in d or d[k] is None:
+            d[k] = "None"
+
+    footer = html_escape(
+        """
+        ⟡ ⊹₊˚‧︵‿₊୨ᰔ୧₊‿︵‧˚₊⊹ ⟡
+           --  MY INFO --
+            ─────୨ৎ─────
+   𐔌. FB    : /tg.nux — Trung Hiếu
+   𐔌. Zalo : 0338316701 — TghieuX
+   𐔌. Tele : @tghieuX — Trungg Hieuu
+   """
+    )
+
+    return (
+        f"<b>{status_color} REG {'THÀNH CÔNG' if is_live else 'THẤT BẠI'} {'🎊' if is_live else '❌'}</b>\n"
+        "<code><i>Thông tin acc bên dưới:</i></code>      ᓚ₍⑅^..^₎ฅ\n"
+        "╭────-_Ი𐑼_-─────────⭓\n"
+        f"│ 👤 Tên: ⤷ ゛<code>{html_escape(d['name'])}</code>  ˎˊ˗\n"
+        f"│ 📧 Email: <code>{html_escape(d['email'])}</code>\n"
+        f"│ 🔑 Mật khẩu: <tg-spoiler><code>{html_escape(d['password'])}</code></tg-spoiler>\n"
+        f"│ 📌 Trạng thái: <b>{html_escape(d['status'])}</b>      ୨ৎ⊹ˑ ֗\n"
+        f"│ 🆔 UID: <code>{html_escape(d['uid'])}</code>\n"
+        f"│ 🔗 Profile: {'https://www.facebook.com/profile.php?id=' + html_escape(d['uid']) if d['uid'] != '0' else 'Không có'}\n"
+        f"│ 🍪 Cookies: <code>{html_escape(d['cookies'])}</code>\n"
+        f"├───────.────\n"
+        f"│ 🌐 IP: <b>▒▒▒▒▒▒▒▒▒▒</b>       ᶻ 𝗓 𐰁 .ᐟ\n"
+        f"│ 🌎 Quốc gia: <b>Việt Nam (VN)</b>\n"
+        f"│ ⏰ Thời gian: <b>{now}</b>        ◟ ͜ ׁ ˙\n"
+        "╰───｡𖦹°‧──────˙⟡────⭓\n"
+        f"<b><i>Chúc bạn một buổi tốt lành!</i></b>\n"
+        f"<b><i>Người sử dụng bot: {user_name}</i></b>  /ᐠ - ˕-マ⌒\n" 
+        f"<b><i>Bot phục vụ bạn: @tghieuX</i></b>\n\n"
+        f"<pre>{footer}</pre>"
+    )
+
+# ================= BOT HANDLERS =================
+def handle_start(chat_id, user_name, message_id):
+    """Xử lý lệnh /start"""
+    text = (
+        f"<b><i>🎉 Chào mừng {html_escape(user_name)} đã đến!👋</i></b>\n"
+        f"<b><i>💌 Hãy sử dụng lệnh /help để xem hướng dẫn!</i></b>"
+    )
+    tg_send(chat_id, text, reply_to_message_id=message_id)
+
+def handle_help(chat_id, message_id):
+    """Xử lý lệnh /help"""
+    text = (
+        "<b><i> 🧸 ┊‌ NUX BOT XIN CHÀO! ┊‌ 🍰\n"
+"                 ˚༺☆༻</i></b>\n"
+"\n"
+"␥ 🫧 TỚ XIN HỖ TRỢ BẠN BẰNG CÁC LỆNH NHƯ SAU:\n"
+"\n"
+"━━━━━━━━━━━━━━━━\n"
+"␥ 「 🚀 LỆNH REG: 」\n"
+"𖥻𓂃  <b>/regfb</b> — Tạo một tài khoản Facebook (no verify)\n"
+" ₎₎ ๑\n"
+"━━━━━━━━━━━━━━━━\n"
+"␥ 「 🔎 LỆNH CHECK INFO: 」\n"
+"𖥻𓂃  <b>/checkif &lt;UID | Link&gt;</b> — Check info Facebook\n"
+" ₎₎ ๑\n"
+"━━━━━━━━━━━━━━━━\n"
+"␥ 「 👤 LỆNH XEM THÔNG TIN TELEGRAM: 」\n"
+"𖥻𓂃  <b>/myinfo</b> — Xem thông tin của bạn\n"
+" ₎₎ ๑\n"
+"━━━━━━━━━━━━━━━━\n"
+"␥ 「 ✨ LỆNH KÍ TỰ AESTHETIC: 」\n"
+"𖥻𓂃  <b>/symbols</b> — Lấy 150 kí tự symbols aesthetic\n"
+" ₎₎ ๑\n"
+"━━━━━━━━━━━━━━━━\n"
+"␥ 「 ⏱ LƯU Ý: 」 Một số lệnh sẽ tự xoá sau 60 giây\n"
+    )
+    tg_send(chat_id, text, reply_to_message_id=message_id)
+
+def format_myinfo(chat_id, user_info):
+    """Format thông tin user"""
+    uid = user_info.get("id")
+    full_name = f"{user_info.get('first_name', '')} {user_info.get('last_name', '')}".strip()
+    username = user_info.get("username")
+    
+    info_text = (
+        "<b>✅ DƯỚI ĐÂY LÀ THÔNG TIN CỦA BẠN:</b>\n"
+        f"<b><i>🆔 UID:</i></b> <code>{uid}</code>\n"
+        f"<b><i>🏷️ Tên:</i></b> <code>{html_escape(full_name)}</code>\n"
+    )
+    
+    if username:
+        info_text += f"<b><i>💳 User: @{html_escape(username)}</i></b>\n"
+    else:
+        info_text += "<b><i>💳 User:</i></b> <code>Không có</code>\n"
+        
+    info_text += "\n<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>"
+    return info_text
+
+def handle_myinfo(chat_id, user_info, message_id):
+    """Xử lý lệnh /myinfo"""
+    text = format_myinfo(chat_id, user_info)
+    sent_msg_id = tg_send(chat_id, text, reply_to_message_id=message_id)
+    
+    if sent_msg_id:
+        threading.Thread(target=self_destruct_message, args=(chat_id, sent_msg_id, message_id, 60), daemon=True).start()
+
+def handle_symbols(chat_id, message_id):
+    """Xử lý lệnh /symbols"""
+    processing_msg = tg_send(chat_id, "⏱️ Đang lấy...", reply_to_message_id=message_id)
+    if not processing_msg:
+        return
+        
+    try:
+        symbols_line = "✦ ✧ ★ ☆ ✯ ✰ ⭐ ✨ ⚝ ♕ ♔ ☾ ☽ ☼ ☀ ☁ ⛄ ☔ ♪ ♫ ♬ ♩ ✿ ❀ ❁ ❃ ❄ ❅ ❆ ❇ ❈ ❉ ✢ ✣ ✤ ✥ ❊ ✱ ✲ ✳ ✴ ✵ ✶ ✷ ✸ ✹ ✺ ❋ † ‡ ※ ⁂ ⁑ ☸ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ☮ ☯ ♨ ❖ ✪ ౿ ๏ ★ ☆"
+        
+        result_text = (
+            "✅ <b>SYMBOLS AESTHETIC:</b>\n"
+            f"<code>{html_escape(symbols_line)}</code>\n\n"
+            "<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>"
+        )
+
+        tg_edit(chat_id, processing_msg, result_text)
+        
+        threading.Thread(target=self_destruct_message, args=(chat_id, processing_msg, message_id, 60), daemon=True).start()
+
+    except Exception as e:
+        error_text = f"❌ Lỗi: {str(e)[:100]}"
+        tg_edit(chat_id, processing_msg, error_text)
+        print(f"{get_time_tag()} [ERROR] {e}")
+
+
+def handle_checkif(chat_id, user_input, message_id, user_name):
+    """Xử lý lệnh /checkif"""
+    processing_msg = tg_send(
+        chat_id,
+        "⏳ Đang xử lý...",
+        reply_to_message_id=message_id
+    )
+    if not processing_msg:
+        return
+
+    try:
+        uid = extract_uid_from_input(user_input)
+        if not uid:
+            tg_edit(chat_id, processing_msg, "❌ Không lấy được UID từ input.")
+            return
+
+        api_result = get_fb_info(uid)
+
+        if "error" in api_result:
+            tg_edit(chat_id, processing_msg, f"❌ {html_escape(api_result['error'])}")
+            return
+
+        caption = create_caption(api_result["data"])
+        tg_edit(chat_id, processing_msg, caption)
+
+        threading.Thread(
+            target=self_destruct_message,
+            args=(chat_id, processing_msg, message_id, 60),
+            daemon=True
+        ).start()
+
+    except Exception as e:
+        tg_edit(
+            chat_id,
+            processing_msg,
+            f"❌ Lỗi hệ thống: {html_escape(str(e)[:100])}"
+        )
+
+# ================= BOT MAIN LOOP =================
+def get_bot_username():
+    """Lấy username của bot"""
+    try:
+        r = requests.get(f"{API}/getMe", timeout=10).json()
+        if r.get("ok") and r.get("result"):
+            return "@" + r["result"]["username"]
+    except:
+        pass
+    return "Không xác định"
+
+BOT_USERNAME = get_bot_username()
+
+print("\n" + "="*50)
+print("🤖 NOVERY TELEGRAM BOT - BY TGHIEUX")
+print(f"Bot: {BOT_USERNAME}")
+print(f"Group ID: {MANDATORY_GROUP_ID}")
+print("="*50 + "\n")
+
+while True:
+    for u in get_updates():
+        msg = u.get("message")
+        if not msg or "text" not in msg or "from" not in msg:
+            continue
+
+        chat_id = msg["chat"]["id"]
+        user_info = msg["from"]
+        user_id = user_info.get("id")
+        text = msg["text"].strip()
+        message_id = msg.get("message_id")
+
+        username_str = user_info.get("username")
+        first_name_str = user_info.get("first_name", "Unknown")
+        user_name = "@" + username_str if username_str else first_name_str
+
+        print(f"{get_time_tag()} | USER: {user_name} | ID: {user_id} | CMD: {text}")
+
+        cmd = text.split()[0]
+        
+        if cmd not in ["/start", f"/start{BOT_USERNAME}", "/help", f"/help{BOT_USERNAME}"]:
+            if not check_group_membership(user_id):
+                require_join_msg = (
+                    "<b>⚠️ YÊU CẦU THAM GIA GROUP!!!</b>\n"
+                    "\n"
+                    "━━━━━━━━━━━━━━━━\n"
+                    "␥ Để sử dụng bot, vui lòng tham gia group:\n"
+                    f"• <b>{MANDATORY_GROUP_TITLE}</b>\n"
+                    "\n"
+                    "␥ Sau khi tham gia, quay lại và sử dụng bot\n"
+                )
+                
+                sent_msg_id = tg_send(chat_id, require_join_msg, reply_to_message_id=message_id)
+                
+                if sent_msg_id:
+                     threading.Thread(target=self_destruct_message, args=(chat_id, sent_msg_id, message_id, 60), daemon=True).start()
+                         
+                continue
+        
+        if text.startswith("/"):
+               if block_group_if_needed(chat_id, text, message_id):
+                continue
+
+        if cmd == "/regfb" or cmd == f"/regfb{BOT_USERNAME}":
+            threading.Thread(
+                target=reg_single_account,
+                args=(chat_id, user_id, user_name, message_id),
+                daemon=True
+            ).start()
+        
+        elif cmd == "/checkif" or cmd == f"/checkif{BOT_USERNAME}":
+            args = text.split(maxsplit=1)
+            if len(args) < 2:
+                error_msg = "❌ Dùng: <code>/checkif &lt;uid-hoặc-link&gt;</code>\nVí dụ:\n• <code>/checkif 100000000000001</code>\n• <code>/checkif https://facebook.com/zuck</code>\n\n<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>"
+                sent_msg_id = tg_send(chat_id, error_msg, reply_to_message_id=message_id)
+                if sent_msg_id:
+                    threading.Thread(target=self_destruct_message, args=(chat_id, sent_msg_id, message_id, 60), daemon=True).start()
+            else:
+                user_input = args[1].strip()
+                threading.Thread(
+                    target=handle_checkif,
+                    args=(chat_id, user_input, message_id, user_name),
+                    daemon=True
+                ).start()
+
+        elif cmd == "/start" or cmd == f"/start{BOT_USERNAME}":
+            handle_start(chat_id, user_name, message_id)
+        elif text == "/myinfo" or cmd == f"/myinfo{BOT_USERNAME}":
+            handle_myinfo(chat_id, user_info, message_id)
+        elif text == "/symbols" or cmd == f"/symbols{BOT_USERNAME}":
+            threading.Thread(
+                target=handle_symbols,
+                args=(chat_id, message_id),
+                daemon=True
+            ).start()
+        elif cmd == "/help" or cmd == f"/help{BOT_USERNAME}":
+            handle_help(chat_id, message_id)
+
+    time.sleep(1)
