@@ -458,8 +458,9 @@ def decode_response_content(response):
     except:
         return str(response.content)
 
-def create_session_with_retry(retries=5):  # TĂNG RETRY CHO RAILWAY
-    """Tạo session - FIX CHO RAILWAY"""
+def create_session_with_retry(retries=3):
+    # ... (giữ nguyên hàm create_session_with_retry)
+    """Tạo session với proxy"""
     proxy_str = get_proxy_for_account()
     
     for attempt in range(retries):
@@ -467,14 +468,19 @@ def create_session_with_retry(retries=5):  # TĂNG RETRY CHO RAILWAY
             session = requests.Session()
             user_agent = get_random_user_agent()
             
-            # Headers đơn giản hơn cho Railway
             session.headers.update({
                 'User-Agent': user_agent,
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
                 'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Accept-Encoding': 'gzip, deflate',
                 'Connection': 'keep-alive',
                 'Upgrade-Insecure-Requests': '1',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Sec-Fetch-User': '?1',
                 'Cache-Control': 'max-age=0',
+                'DNT': '1',
             })
             
             if proxy_str:
@@ -482,25 +488,53 @@ def create_session_with_retry(retries=5):  # TĂNG RETRY CHO RAILWAY
                     'http': proxy_str,
                     'https': proxy_str
                 })
-            
-            time.sleep(random.uniform(2.0, 3.0))
-            
-            # Dùng www.facebook.com thay vì mbasic (ổn định hơn trên Railway)
-            response = session.get("https://www.facebook.com/reg/", timeout=40, verify=False)  # TĂNG TIMEOUT
+                
+            response = session.get("https://www.facebook.com/reg/", timeout=15)
             
             if response.status_code == 200:
                 content = decode_response_content(response)
-                if 'sign up' in content.lower() or 'đăng ký' in content.lower():
-                    print(f"{get_time_tag()} ✅ Session created successfully")
+                if 'sign up' in content.lower() or 'đăng ký' in content.lower() or 'reg_email__' in content:
                     return session
-                else:
-                    print(f"{get_time_tag()} ⚠️ No registration form found")
 
         except Exception as e:
-            print(f"{get_time_tag()} ❌ Session attempt {attempt+1} failed: {str(e)[:100]}")
             time.sleep(3)
     
-    raise Exception(f"Không thể tạo session sau {retries} lần thử")
+    for attempt in range(retries):
+        try:
+            session = requests.Session()
+            mobile_agents = [
+                'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
+                'Mozilla/5.0 (Linux; Android 14; SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36'
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/549.4 (KHTML, like Gecko) Version/10.5.35 Mobile/FD6B83 Safari/549.4',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/12.5.34 Mobile/Y03Z1S Safari/602.5',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2 like Mac OS X) AppleWebKit/545.27.7 (KHTML, like Gecko) Version/12.2.81 Mobile/Z3XCRI Safari/545.27.7',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/560.18 (KHTML, like Gecko) Version/10.3 Mobile/LQ9VEC Safari/560.18',
+                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_0_7 like Mac OS X; en-US) AppleWebKit/535.21.31 (KHTML, like Gecko) Version/13.1.2 Mobile/8C3 Safari/6533.18.5',
+            ]
+            user_agent = random.choice(mobile_agents)
+            
+            session.headers.update({
+                'User-Agent': user_agent,
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Accept-Encoding': 'gzip, deflate',
+            })
+
+            if proxy_str:
+                session.proxies.update({'http': proxy_str, 'https': proxy_str})
+                
+            response = session.get("https://www.facebook.com/reg/", timeout=15)
+            
+            if response.status_code == 200:
+                content = decode_response_content(response)
+                if "facebook" in content.lower():
+                    return session
+        except Exception as e:
+            time.sleep(2)
+    
+    raise Exception("Không thể tạo session")
+
 
 def extract_form_fields_with_csrf(soup):
     """Trích xuất form và fields kèm CSRF token"""
