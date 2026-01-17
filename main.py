@@ -711,21 +711,6 @@ def cookies_to_string(cookies_dict):
 
 # ================= MAIN REGISTRATION FUNCTION =================
 def reg_single_account(chat_id, user_id, user_name, message_id):
-    """Hàm chính đăng ký account - OPTIMIZE CHO RAILWAY"""
-    if chat_id in RUNNING_CHAT:
-        tg_send(chat_id, "⏱️ Đợi lệnh kia chạy xong đã.", reply_to_message_id=message_id)
-        return
-
-    now = time.time()
-    last = LAST_REG_TIME.get(user_id, 0) 
-    if now - last < REG_DELAY:
-        wait = int(REG_DELAY - (now - last))
-        tg_send(chat_id, f"⏱️ Cỡ {wait}s nữa mới được reg tiếp.", reply_to_message_id=message_id)
-        return
-
-    LAST_REG_TIME[user_id] = now
-    RUNNING_CHAT.add(chat_id)
-
     msg_id = tg_send(chat_id, f"{get_time_tag()} 🚀 Bắt đầu reg...", reply_to_message_id=message_id) 
     if not msg_id:
         RUNNING_CHAT.remove(chat_id)
