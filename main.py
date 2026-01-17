@@ -464,11 +464,6 @@ def decode_response_content(response):
         return str(response.content)
 
 def create_session_with_retry(retries=3):
-    """Tạo session với proxy - headers đầy đủ"""
-    proxy_str = get_proxy_for_account()
-    
-    for attempt in range(retries):
-        try:
             session = requests.Session()
             user_agent = get_random_user_agent()
             
@@ -487,12 +482,6 @@ def create_session_with_retry(retries=3):
                 'Cache-Control': 'max-age=0',
                 'DNT': '1',
             })
-            
-            if proxy_str:
-                session.proxies.update({
-                    'http': proxy_str,
-                    'https': proxy_str
-                })
             
             time.sleep(random.uniform(2.0, 3.0))
                 
