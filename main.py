@@ -1,3 +1,4 @@
+
 import keep_alive 
 import os
 import time
@@ -12,11 +13,10 @@ import sys
 import threading
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, quote
-from pystyle import Colors, Colorate
 keep_alive.keep_alive()
 
 # ================= CONFIG TELEGRAM =================
-BOT_TOKEN = "8251269112:AAEuO_mDQ8wcivcMDjXwc_srXcTHgvTjQI8"  # ĐÃ THAY TOKEN
+BOT_TOKEN = "8251269112:AAEuO_mDQ8wcivcMDjXwc_srXcTHgvTjQI8"
 API = f"https://api.telegram.org/bot{BOT_TOKEN}"
 UID_FILE = "tele_uid.txt"
 OFFSET = 0
@@ -24,11 +24,15 @@ REG_DELAY = 10
 LAST_REG_TIME = {}
 RUNNING_CHAT = set()
 
-# THÊM CẤU HÌNH NHÓM BẮT BUỘC THAM GIA - ĐÃ THAY ID GROUP
+# THÊM CẤU HÌNH NHÓM BẮT BUỘC THAM GIA
 MANDATORY_GROUP_ID = -1003444341292 
 MANDATORY_GROUP_TITLE = "𝗣𝗮𝗿𝗮𝗴𝗼𝗻 𝗦𝗲𝗹 ᵎ!ᵎ 𝐟𝐫𝐬 𝐜𝐨𝐝𝐞"
 
 # ================= CONFIG REGISTRATION =================
+# THÊM CẤU HÌNH CHO RAILWAY
+RAILWAY_MODE = True  # Đặt True khi chạy trên Railway
+USE_PROXY = False if RAILWAY_MODE else True  # Railway không cần proxy
+
 proxy_reg = [
     "sp06v4-01.proxymmo.me:20393:sp06v405-20393:PDQLU"
 ]
@@ -191,7 +195,6 @@ def check_group_membership(user_id):
             return False
             
     except Exception as e:
-        print(f"{get_time_tag()} [GROUP CHECK ERROR] {e}")
         return False
 
 # ================= SAFE HELPER =================
@@ -399,8 +402,8 @@ def parse_proxy(proxy_str):
         return proxy_str
 
 def get_proxy_for_account():
-    """Lấy proxy ngẫu nhiên"""
-    if not proxy_reg:
+    """Lấy proxy ngẫu nhiên - FIX CHO RAILWAY"""
+    if not USE_PROXY or not proxy_reg:  # Railway không dùng proxy
         return None
         
     proxy_str = random.choice(proxy_reg)
@@ -441,7 +444,7 @@ def mail_ao():
     return f"{username}@{domain}"
 
 def decode_response_content(response):
-    """Decode response content với encoding đúng - FIX tiếng Việt"""
+    """Decode response content với encoding đúng"""
     try:
         # Thử UTF-8 trước
         try:
@@ -450,54 +453,54 @@ def decode_response_content(response):
         except:
             pass
             
-        # Thử các encoding tiếng Việt
-        viet_encodings = ['windows-1258', 'cp1258', 'utf-8-sig', 'iso-8859-1']
-        for encoding in viet_encodings:
-            try:
-                return response.content.decode(encoding, errors='ignore')
-            except:
-                continue
-        
         # Fallback
         return response.text if hasattr(response, 'text') else str(response.content)
     except:
         return str(response.content)
 
-def create_session_with_retry(retries=3):
+def create_session_with_retry(retries=5):  # TĂNG RETRY CHO RAILWAY
+    """Tạo session - FIX CHO RAILWAY"""
+    proxy_str = get_proxy_for_account()
+    
+    for attempt in range(retries):
+        try:
             session = requests.Session()
             user_agent = get_random_user_agent()
             
-            # Headers đầy đủ
+            # Headers đơn giản hơn cho Railway
             session.headers.update({
                 'User-Agent': user_agent,
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                 'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-                'Accept-Encoding': 'gzip, deflate, br',
                 'Connection': 'keep-alive',
                 'Upgrade-Insecure-Requests': '1',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
-                'Sec-Fetch-User': '?1',
                 'Cache-Control': 'max-age=0',
-                'DNT': '1',
             })
             
+            if proxy_str:
+                session.proxies.update({
+                    'http': proxy_str,
+                    'https': proxy_str
+                })
+            
             time.sleep(random.uniform(2.0, 3.0))
-                
-            # Thử mbasic.facebook.com (nhẹ hơn)
-            response = session.get("https://www.facebook.com/reg/", timeout=30)
+            
+            # Dùng www.facebook.com thay vì mbasic (ổn định hơn trên Railway)
+            response = session.get("https://www.facebook.com/reg/", timeout=40, verify=False)  # TĂNG TIMEOUT
             
             if response.status_code == 200:
                 content = decode_response_content(response)
                 if 'sign up' in content.lower() or 'đăng ký' in content.lower():
+                    print(f"{get_time_tag()} ✅ Session created successfully")
                     return session
+                else:
+                    print(f"{get_time_tag()} ⚠️ No registration form found")
 
         except Exception as e:
-            print(f"{get_time_tag()} [ERROR] Session attempt {attempt+1} failed: {e}")
+            print(f"{get_time_tag()} ❌ Session attempt {attempt+1} failed: {str(e)[:100]}")
             time.sleep(3)
     
-    raise Exception("Không thể tạo session")
+    raise Exception(f"Không thể tạo session sau {retries} lần thử")
 
 def extract_form_fields_with_csrf(soup):
     """Trích xuất form và fields kèm CSRF token"""
@@ -539,23 +542,21 @@ def extract_form_fields_with_csrf(soup):
         if name in important_fields and value:
             fields[name] = value
     
-    print(f"{get_time_tag()} [DEBUG] Found {len(fields)} form fields")
     return reg_form, fields
 
 def register_with_mbasic(session, fullname, email, password, birthday, chat_id, msg_id, update_func):
-    """Đăng ký Facebook - FIX lỗi encoding"""
+    """Đăng ký Facebook - OPTIMIZE CHO RAILWAY"""
     try:
         time.sleep(random.uniform(2.0, 3.0))
         
         update_func(chat_id, msg_id, f"{get_time_tag()} 🌐 Đang tải trang đăng ký...")
         
-        # Dùng mbasic.facebook.com (ít JavaScript hơn)
-        response = session.get("https://mbasic.facebook.com/reg/", timeout=30)
+        # Thử www.facebook.com trước
+        response = session.get("https://www.facebook.com/reg/", timeout=40)
         
         if response.status_code != 200:
-            return False, f"HTTP Error {response.status_code}", None, response
-        
-        print(f"{get_time_tag()} [DEBUG] Loaded registration page")
+            print(f"{get_time_tag()} ❌ HTTP Error {response.status_code}")
+            return False, f"HTTP Error {response.status_code}", None
         
         content = decode_response_content(response)
         
@@ -565,7 +566,8 @@ def register_with_mbasic(session, fullname, email, password, birthday, chat_id, 
         form, fields = extract_form_fields_with_csrf(soup)
         
         if not form:
-            return False, "Không tìm thấy form đăng ký", None, response
+            print(f"{get_time_tag()} ❌ No registration form found")
+            return False, "Không tìm thấy form đăng ký", None
         
         parts = fullname.split()
         firstname = parts[0]
@@ -591,20 +593,17 @@ def register_with_mbasic(session, fullname, email, password, birthday, chat_id, 
             action = '/reg/'
             
         if action.startswith('/'):
-            action_url = 'https://mbasic.facebook.com' + action
+            action_url = 'https://www.facebook.com' + action
         else:
             action_url = action
-        
-        print(f"{get_time_tag()} [DEBUG] Submitting to: {action_url}")
         
         update_func(chat_id, msg_id, f"{get_time_tag()} 📤 Đang gửi đơn đăng ký...")
         
         # Thêm referer
-        session.headers.update({'Referer': 'https://mbasic.facebook.com/reg/'})
+        session.headers.update({'Referer': 'https://www.facebook.com/reg/'})
         
         # Gửi form với timeout dài
-        response = session.post(action_url, data=fields, timeout=45, allow_redirects=True)
-        
+        response = session.post(action_url, data=fields, timeout=60, allow_redirects=True)
         
         time.sleep(random.uniform(3.0, 4.0))
         
@@ -616,16 +615,21 @@ def register_with_mbasic(session, fullname, email, password, birthday, chat_id, 
         uid = cookies_dict.get('c_user', '0')
         
         content = decode_response_content(response)
-          
+        
+        print(f"{get_time_tag()} 🔍 UID from cookies: {uid}")
+        
         # Kiểm tra kết quả
         if uid and uid != '0':
-            return True, "Thành công", uid, response
+            print(f"{get_time_tag()} ✅ Registration successful, UID: {uid}")
+            return True, "Thành công", uid
             
         elif any(keyword in content.lower() for keyword in ['confirm', 'xác nhận', 'mã', 'code', 'email sent']):
-            return True, "Cần xác nhận email", uid, response
+            print(f"{get_time_tag()} ⚠️ Need email confirmation")
+            return True, "Cần xác nhận email", uid
             
         elif 'checkpoint' in response.url.lower():
-            return True, "Cần xác minh bảo mật", uid, response
+            print(f"{get_time_tag()} ⚠️ Checkpoint required")
+            return True, "Cần xác minh bảo mật", uid
             
         elif 'error' in content.lower():
             # Tìm thông báo lỗi
@@ -633,14 +637,15 @@ def register_with_mbasic(session, fullname, email, password, birthday, chat_id, 
             error_div = soup2.find('div', class_=re.compile(r'error|alert|warning'))
             if error_div:
                 error_text = error_div.get_text(strip=True)[:100]
-                return False, f"Lỗi: {error_text}", uid, response
+                return False, f"Lỗi: {error_text}", uid
             else:
-                return False, "Facebook báo lỗi", uid, response
+                return False, "Facebook báo lỗi", uid
         else:
-            return False, "Không xác định được kết quả", uid, response
+            return False, "Không xác định được kết quả", uid
 
     except Exception as e:
-        return False, f"Lỗi: {str(e)[:100]}", None  
+        print(f"{get_time_tag()} ❌ Registration error: {str(e)}")
+        return False, f"Lỗi: {str(e)[:100]}", None
 
 def get_account_cookies(session):
     """Lấy cookies từ session"""
@@ -670,11 +675,9 @@ def cookies_to_string(cookies_dict):
     cookie_str = "; ".join([f"{k}={v}" for k, v in selected_cookies.items()])
     return cookie_str
 
-# ================= DEBUG FUNCTIONS =================
-
 # ================= MAIN REGISTRATION FUNCTION =================
 def reg_single_account(chat_id, user_id, user_name, message_id):
-    """Hàm chính đăng ký account"""
+    """Hàm chính đăng ký account - OPTIMIZE CHO RAILWAY"""
     if chat_id in RUNNING_CHAT:
         tg_send(chat_id, "⏱️ Đợi lệnh kia chạy xong đã.", reply_to_message_id=message_id)
         return
@@ -708,7 +711,7 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
         time.sleep(random.uniform(1.5, 2.5))
         session = create_session_with_retry()
 
-        success, message, uid, debug_response = register_with_mbasic(
+        success, message, uid = register_with_mbasic(
             session, fullname, email, password, birthday, 
             chat_id, msg_id, tg_edit
         )
@@ -723,15 +726,12 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
             if uid and uid != '0':
                 status = f"✅ Thành công"
                 is_live = True
-                reg_status = "success"
             else:
                 status = f"⚠️ {message}"
                 is_live = False
-                reg_status = "need_confirm"
         else:
             status = f"❌ {message}"
             is_live = False
-            reg_status = "failed"
 
         result = {
             "name": fullname,
@@ -742,16 +742,15 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
             "cookies": cookie_str,
             "user_name": user_name,
             "is_live": is_live,
-            "reg_status": reg_status,
             "message": message
         }
 
         tg_edit(chat_id, msg_id, format_result(result, success))
         
-        
         # Lưu account nếu có UID thực
         if uid and uid != '0':
             save_account_to_file(fullname, email, password, profile_url, cookies_dict)
+            tg_send(chat_id, f"{get_time_tag()} ✅ Đã lưu account!", reply_to_message_id=message_id)
 
     except Exception as e:
         error_result = {
@@ -759,7 +758,7 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
             "status": f"❌ Lỗi hệ thống: {str(e)[:50]}"
         }
         tg_edit(chat_id, msg_id, format_result(error_result, False))
-        print(f" {get_time_tag()} [LỖI] {e}")
+        print(f"{get_time_tag()} ❌ System error: {e}")
 
     finally:
         RUNNING_CHAT.remove(chat_id)
@@ -807,8 +806,7 @@ def format_result(d, success):
             f"👤 Người sử dụng bot: <b>{user_name}</b>\n"
             f"❌ Reg thất bại\n"
             f"⏰ {now}\n"
-            f"Lỗi: {html_escape(d.get('status', 'Không xác định'))}\n"
-            f"<i>Đã gửi file debug để phân tích</i>"
+            f"Lỗi: {html_escape(d.get('status', 'Không xác định'))}"
         )
 
     is_live = d.get('is_live', False)
@@ -997,6 +995,8 @@ print("\n" + "="*50)
 print("🤖 NOVERY TELEGRAM BOT - BY TGHIEUX")
 print(f"Bot: {BOT_USERNAME}")
 print(f"Group ID: {MANDATORY_GROUP_ID}")
+print(f"Railway Mode: {RAILWAY_MODE}")
+print(f"Use Proxy: {USE_PROXY}")
 print("="*50 + "\n")
 
 while True:
