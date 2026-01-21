@@ -526,7 +526,7 @@ def simple_facebook_registration(session, fullname, email, password, birthday):
         soup = BeautifulSoup(response.text, 'html.parser')
         
         # Tìm form
-        form = None
+        form = form = soup.find_all('form')
         for f in soup.find_all('form'):
             if f.find('input', {'name': 'reg_email__'}):
                 form = f
