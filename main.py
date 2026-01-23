@@ -11,7 +11,7 @@ import platform
 import sys
 import threading
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse, quote
+from urllib.parse import urlparse, quote, urljoin
 keep_alive.keep_alive()
 
 # ================= CONFIG TEALWAY =================
@@ -506,149 +506,277 @@ def create_session_with_retry():
         print(f"{get_time_tag()} ❌ Lỗi tạo session: {e}")
         return None
 
-# ================= MOBILE FACEBOOK REGISTRATION (FIX CHO RAILWAY) =================
+# ================= MOBILE FACEBOOK REGISTRATION (FIXED VERSION) =================
 def mobile_facebook_registration(session, fullname, email, password, birthday):
-    """Đăng ký Facebook qua mobile site - Ổn định hơn cho Railway"""
+    """Đăng ký Facebook qua mobile site - Fixed version"""
     try:
         print(f"{get_time_tag()} [1/3] Đang lấy trang đăng ký mobile...")
         
-        # Dùng mbasic.facebook.com (ổn định hơn)
-        mobile_url = "https://mbasic.facebook.com/reg/"
+        # THỬ NHIỀU URL MOBILE KHÁC NHAU
+        mobile_urls = [
+            "https://mbasic.facebook.com/reg/",
+            "https://m.facebook.com/reg/",
+            "https://mbasic.facebook.com/r.php",
+            "https://m.facebook.com/r.php",
+            "https://mbasic.facebook.com/"
+        ]
         
-        # Thêm headers mobile
-        mobile_headers = {
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Cache-Control': 'max-age=0',
-        }
-        session.headers.update(mobile_headers)
+        response = None
+        html_content = ""
         
-        response = session.get(mobile_url, timeout=20, allow_redirects=True)
+        for url in mobile_urls:
+            try:
+                print(f"{get_time_tag()}     Thử URL: {url}")
+                
+                # Thêm delay giữa các request
+                time.sleep(random.uniform(1, 2))
+                
+                # Header mobile thực tế
+                mobile_headers = {
+                    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Cache-Control': 'max-age=0',
+                }
+                session.headers.update(mobile_headers)
+                
+                response = session.get(url, timeout=25, allow_redirects=True)
+                
+                if response.status_code == 200:
+                    html_content = response.text
+                    
+                    # KIỂM TRA XEM CÓ PHẢI TRANG ĐĂNG KÝ KHÔNG
+                    if any(keyword in html_content.lower() for keyword in ['sign up', 'reg_email', 'firstname', 'lastname', 'birthday']):
+                        print(f"{get_time_tag()}     [✅] Tìm thấy trang đăng ký mobile")
+                        break
+                    else:
+                        print(f"{get_time_tag()}     [⚠️] Trang không phải đăng ký, thử URL khác...")
+                else:
+                    print(f"{get_time_tag()}     [❌] Status: {response.status_code}")
+                    
+            except Exception as e:
+                print(f"{get_time_tag()}     [❌] Lỗi với URL {url}: {str(e)[:50]}")
+                continue
+        
+        if not response or response.status_code != 200:
+            return False, f"Không thể truy cập trang mobile (Status: {response.status_code if response else 'No response'})"
         
         if RAILWAY_MODE:
-            debug_save_html("debug_mobile_page.html", response.text)
+            debug_save_html("debug_mobile_page.html", html_content[:3000])
         
-        if response.status_code != 200:
-            return False, f"Mobile page status: {response.status_code}"
+        # PHÂN TÍCH HTML ĐỂ TÌM FORM
+        soup = BeautifulSoup(html_content, 'html.parser')
         
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Tìm form đăng ký trên mobile
+        # TÌM FORM BẰNG NHIỀU CÁCH
         form = None
-        forms = soup.find_all('form')
         
+        # Cách 1: Tìm form có input reg_email__
+        forms = soup.find_all('form')
         for f in forms:
-            action = f.get('action', '')
-            if any(keyword in action.lower() for keyword in ['reg', 'signup', 'create']):
+            # Kiểm tra nếu form có các field đăng ký
+            inputs = f.find_all('input')
+            has_reg_fields = False
+            for inp in inputs:
+                name = inp.get('name', '')
+                if any(field in name.lower() for field in ['reg_email', 'firstname', 'lastname']):
+                    has_reg_fields = True
+                    break
+            
+            if has_reg_fields:
                 form = f
+                print(f"{get_time_tag()}     [✅] Tìm thấy form bằng reg fields")
                 break
         
+        # Cách 2: Tìm form có action chứa /reg/ hoặc /r.php
+        if not form:
+            for f in forms:
+                action = f.get('action', '').lower()
+                if any(keyword in action for keyword in ['/reg', 'r.php', 'signup']):
+                    form = f
+                    print(f"{get_time_tag()}     [✅] Tìm thấy form bằng action")
+                    break
+        
+        # Cách 3: Tìm form có method POST
+        if not form:
+            for f in forms:
+                if f.get('method', '').lower() == 'post':
+                    form = f
+                    print(f"{get_time_tag()}     [✅] Tìm thấy form bằng method POST")
+                    break
+        
+        # Cách 4: Lấy form đầu tiên nếu vẫn không tìm thấy
         if not form and forms:
-            form = forms[0]  # Lấy form đầu tiên
+            form = forms[0]
+            print(f"{get_time_tag()}     [⚠️] Lấy form đầu tiên (có thể không đúng)")
         
         if not form:
             return False, "Không tìm thấy form đăng ký trên mobile"
         
-        print(f"{get_time_tag()}     [✅] Tìm thấy form mobile")
+        print(f"{get_time_tag()}     [✅] Đã tìm thấy form mobile")
         
-        # Thu thập các field
+        # THU THẬP CÁC FIELD TRONG FORM
         form_data = {}
         
         for inp in form.find_all('input'):
             name = inp.get('name')
             value = inp.get('value', '')
             
-            if name:
+            if name and name not in ['submit', 'cancel']:
                 form_data[name] = value
         
-        # Thêm thông tin đăng ký
+        # THÊM THÔNG TIN ĐĂNG KÝ
         parts = fullname.split()
         firstname = parts[0]
         lastname = " ".join(parts[1:]) if len(parts) > 1 else firstname
         day, month, year = birthday.split("/")
         
-        # Cập nhật form data
-        form_data.update({
-            'firstname': firstname,
-            'lastname': lastname,
-            'reg_email__': email,
-            'reg_email_confirmation__': email,
-            'reg_passwd__': password,
-            'birthday_day': day,
-            'birthday_month': month,
-            'birthday_year': year,
-            'sex': str(random.choice([1, 2])),  # 1=Nữ, 2=Nam
-        })
+        # TÌM ĐÚNG TÊN FIELD CHO CÁC THÔNG TIN
+        name_fields_mapping = {}
+        for inp in form.find_all('input'):
+            name = inp.get('name', '')
+            if 'first' in name.lower():
+                name_fields_mapping['firstname'] = name
+            elif 'last' in name.lower():
+                name_fields_mapping['lastname'] = name
+            elif 'email' in name.lower():
+                name_fields_mapping['email'] = name
+            elif 'pass' in name.lower():
+                name_fields_mapping['password'] = name
         
-        # Xử lý action URL
+        # CẬP NHẬT FORM DATA VỚI FIELD ĐÚNG
+        for key, field_name in name_fields_mapping.items():
+            if key == 'firstname':
+                form_data[field_name] = firstname
+            elif key == 'lastname':
+                form_data[field_name] = lastname
+            elif key == 'email':
+                form_data[field_name] = email
+                # Tìm field xác nhận email
+                for inp in form.find_all('input'):
+                    inp_name = inp.get('name', '')
+                    if 'confirm' in inp_name.lower() and 'email' in inp_name.lower():
+                        form_data[inp_name] = email
+            elif key == 'password':
+                form_data[field_name] = password
+        
+        # THÊM NGÀY SINH
+        for inp in form.find_all('select'):
+            name = inp.get('name', '').lower()
+            if 'day' in name:
+                form_data[name] = day
+            elif 'month' in name:
+                form_data[name] = month
+            elif 'year' in name:
+                form_data[name] = year
+        
+        # THÊM GIỚI TÍNH
+        gender_field = None
+        for inp in form.find_all('input'):
+            name = inp.get('name', '').lower()
+            if 'sex' in name or 'gender' in name:
+                gender_field = name
+                break
+        
+        if gender_field:
+            form_data[gender_field] = str(random.choice([1, 2]))  # 1=Nữ, 2=Nam
+        
+        # XỬ LÝ ACTION URL
         action = form.get('action', '')
-        if action.startswith('/'):
-            submit_url = f"https://mbasic.facebook.com{action}"
-        elif action.startswith('http'):
+        base_url = response.url
+        
+        if action.startswith('http'):
             submit_url = action
+        elif action.startswith('/'):
+            # Lấy domain từ base_url
+            parsed_url = urlparse(base_url)
+            domain = f"{parsed_url.scheme}://{parsed_url.netloc}"
+            submit_url = domain + action
         else:
-            submit_url = f"https://mbasic.facebook.com{action}"
+            submit_url = urljoin(base_url, action)
         
         print(f"{get_time_tag()} [2/3] Đang submit form mobile...")
         time.sleep(random.uniform(2, 3))
         
-        # Gửi request
+        # THÊM HEADERS CHO SUBMIT
+        submit_headers = {
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Origin': 'https://mbasic.facebook.com',
+            'Referer': response.url,
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Cache-Control': 'max-age=0',
+        }
+        
+        # GỬI REQUEST SUBMIT
         submit_response = session.post(
             submit_url,
             data=form_data,
             timeout=30,
             allow_redirects=True,
-            headers={
-                'Referer': response.url,
-                'Origin': 'https://mbasic.facebook.com',
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
+            headers=submit_headers
         )
         
         print(f"{get_time_tag()} [3/3] Kiểm tra kết quả mobile...")
         
         if RAILWAY_MODE:
-            debug_save_html("debug_mobile_response.html", submit_response.text)
+            debug_save_html("debug_mobile_response.html", submit_response.text[:3000])
         
-        # Kiểm tra kết quả
+        # KIỂM TRA KẾT QUẢ
+        # Kiểm tra cookie
         if 'c_user' in session.cookies:
             uid = session.cookies.get('c_user')
             return True, f"Thành công (Mobile - UID: {uid})"
         
-        # Kiểm tra các dấu hiệu thành công
+        # Kiểm tra redirect
         final_url = submit_response.url.lower()
-        content = submit_response.text.lower()
+        final_html = submit_response.text.lower()
         
-        if 'checkpoint' in final_url:
-            return False, "Checkpoint (Mobile)"
-        elif 'confirm' in final_url or 'confirm' in content:
-            return True, "Cần xác nhận email (Mobile)"
-        elif any(keyword in final_url for keyword in ['home', 'mbasic', 'welcome']):
-            return True, "Thành công (Mobile)"
-        elif 'sorry' in content or 'temporarily blocked' in content:
-            return False, "Facebook chặn tạm thời (Mobile)"
-        else:
-            # Kiểm tra thông báo lỗi
-            error_patterns = [
-                r'id="reg_error"[^>]*>([^<]+)',
-                r'class="[^"]*error[^"]*"[^>]*>([^<]+)',
-                r'>([^<]+error[^<]+)<'
-            ]
-            
-            for pattern in error_patterns:
-                match = re.search(pattern, submit_response.text, re.IGNORECASE)
-                if match:
-                    error_msg = match.group(1).strip()[:100]
-                    return False, f"Lỗi mobile: {error_msg}"
-            
-            return False, "Không xác định (Mobile)"
+        success_keywords = ['home', 'welcome', 'profile', 'timeline', 'feed']
+        checkpoint_keywords = ['checkpoint', 'security', 'confirm', 'verify']
+        error_keywords = ['error', 'sorry', 'temporarily', 'blocked', 'invalid']
+        
+        # Kiểm tra thành công
+        for keyword in success_keywords:
+            if keyword in final_url or keyword in final_html:
+                # Cố gắng lấy UID từ cookie hoặc HTML
+                uid_match = re.search(r'c_user=(\d+)', str(session.cookies))
+                if uid_match:
+                    uid = uid_match.group(1)
+                    return True, f"Thành công (Mobile - UID: {uid})"
+                else:
+                    return True, "Thành công (Mobile - cần xác nhận)"
+        
+        # Kiểm tra checkpoint
+        for keyword in checkpoint_keywords:
+            if keyword in final_url or keyword in final_html:
+                return True, "Checkpoint (Mobile - cần xác minh)"
+        
+        # Kiểm tra lỗi
+        for keyword in error_keywords:
+            if keyword in final_url or keyword in final_html:
+                return False, f"Lỗi mobile: {keyword.capitalize()}"
+        
+        # Nếu không phát hiện gì, kiểm tra thủ công
+        if 'id="reg_error"' in submit_response.text:
+            error_match = re.search(r'id="reg_error"[^>]*>([^<]+)', submit_response.text)
+            if error_match:
+                error_msg = error_match.group(1).strip()[:100]
+                return False, f"Lỗi mobile: {error_msg}"
+        
+        # Mặc định
+        return False, "Không xác định kết quả (Mobile)"
             
     except Exception as e:
-        return False, f"Lỗi mobile: {str(e)[:100]}"
+        error_msg = str(e)
+        print(f"{get_time_tag()} ❌ Lỗi mobile registration: {error_msg}")
+        return False, f"Lỗi mobile: {error_msg[:100]}"
 
 # ================= WEB FACEBOOK REGISTRATION =================
 def simple_facebook_registration(session, fullname, email, password, birthday):
