@@ -30,7 +30,7 @@ MANDATORY_GROUP_TITLE = "𝗣𝗮𝗿𝗮𝗴𝗼𝗻 𝗦𝗲𝗹 ᵎ!ᵎ 𝐟�
 
 # ================= CONFIG REGISTRATION =================
 # RAILWAY CONFIG
-USE_PROXY = True if RAILWAY_MODE else True  # Railway không cần proxy
+USE_PROXY = False if RAILWAY_MODE else False  # Railway không cần proxy
 
 proxy_reg = [
     "sp06v4-01.proxymmo.me:20393:sp06v405-20393:PDQLU"
