@@ -427,7 +427,7 @@ def get_random_user_agent():
 def ten_gha():
     first = ["Bạch","Uyển","Cố","Sở","Trạch","Lam","Thanh","Mặc","Kim","Thiên","Hồng","Kính","Thủy","Kiều","Minh","Nhật","Băng","Hải","Tâm","Phi"]
     mid = ["Vũ","Hạ","Tỉnh","Vân","Khúc","Ảnh","Huyết","Vô","Tuyệt","Mệnh","Ngản","Ngạn","Bi","Lưu","Tĩnh","Lộ","Phong","Tư","Khiết","Vĩ"]
-    last = ["Khách","Xuẫn","Nghi","Ninh","Nhạn","Quân","Hiên","Lâm","歌","琴","郎","箫","楼","塔","叶","燕","府","徒","豪"]
+    last = ["Khách","Xuẫn","Nghi","Ninh","Nhạn","Quân","Hiên","Lâm"]
     return f"{random.choice(first)} {random.choice(mid)} {random.choice(last)}"
 
 def birth():
@@ -514,11 +514,7 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
         
         # THỬ NHIỀU URL MOBILE KHÁC NHAU
         mobile_urls = [
-            "https://mbasic.facebook.com/reg/",
-            "https://m.facebook.com/reg/",
-            "https://mbasic.facebook.com/r.php",
-            "https://m.facebook.com/r.php",
-            "https://mbasic.facebook.com/"
+            "https://www.facebook.com/reg/",
         ]
         
         response = None
@@ -707,7 +703,7 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
             'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate',
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Origin': 'https://mbasic.facebook.com',
+            'Origin': 'https://www.facebook.com',
             'Referer': response.url,
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
