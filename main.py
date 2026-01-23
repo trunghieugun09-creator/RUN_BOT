@@ -30,7 +30,7 @@ MANDATORY_GROUP_TITLE = "𝗣𝗮𝗿𝗮𝗴𝗼𝗻 𝗦𝗲𝗹 ᵎ!ᵎ 𝐟�
 
 # ================= CONFIG REGISTRATION =================
 # RAILWAY CONFIG
-USE_PROXY = True if RAILWAY_MODE else True  # Railway không cần proxy
+USE_PROXY = False if RAILWAY_MODE else True  # Railway không cần proxy
 
 proxy_reg = [
     "sp06v4-01.proxymmo.me:20393:sp06v405-20393:PDQLU"
@@ -50,77 +50,6 @@ os.makedirs(thu_muc_luu, exist_ok=True)
 API_KEY = "apikeysumi"
 API_INFO_URL = "https://adidaphat.site/facebook/getinfo"
 UID_API_URL = "https://keyherlyswar.x10.mx/Apidocs/getuidfb.php?link="
-
-# ================= HÀM TẠO EMAIL VÀ MẬT KHẨU THEO YÊU CẦU =================
-def remove_accents(text):
-    """Chuyển tên thành không dấu và viết thường"""
-    accents = {
-        'á': 'a', 'à': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
-        'ă': 'a', 'ắ': 'a', 'ằ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a',
-        'â': 'a', 'ấ': 'a', 'ầ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ậ': 'a',
-        'đ': 'd',
-        'é': 'e', 'è': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ẹ': 'e',
-        'ê': 'e', 'ế': 'e', 'ề': 'e', 'ể': 'e', 'ễ': 'e', 'ệ': 'e',
-        'í': 'i', 'ì': 'i', 'ỉ': 'i', 'ĩ': 'i', 'ị': 'i',
-        'ó': 'o', 'ò': 'o', 'ỏ': 'o', 'õ': 'o', 'ọ': 'o',
-        'ô': 'o', 'ố': 'o', 'ồ': 'o', 'ổ': 'o', 'ỗ': 'o', 'ộ': 'o',
-        'ơ': 'o', 'ớ': 'o', 'ờ': 'o', 'ở': 'o', 'ỡ': 'o', 'ợ': 'o',
-        'ú': 'u', 'ù': 'u', 'ủ': 'u', 'ũ': 'u', 'ụ': 'u',
-        'ư': 'u', 'ứ': 'u', 'ừ': 'u', 'ử': 'u', 'ữ': 'u', 'ự': 'u',
-        'ý': 'y', 'ỳ': 'y', 'ỷ': 'y', 'ỹ': 'y', 'ỵ': 'y',
-        'Á': 'a', 'À': 'a', 'Ả': 'a', 'Ã': 'a', 'Ạ': 'a',
-        'Ă': 'a', 'Ắ': 'a', 'Ằ': 'a', 'Ẳ': 'a', 'Ẵ': 'a', 'Ặ': 'a',
-        'Â': 'a', 'Ấ': 'a', 'Ầ': 'a', 'Ẩ': 'a', 'Ẫ': 'a', 'Ậ': 'a',
-        'Đ': 'd',
-        'É': 'e', 'È': 'e', 'Ẻ': 'e', 'Ẽ': 'e', 'Ẹ': 'e',
-        'Ê': 'e', 'Ế': 'e', 'Ề': 'e', 'Ể': 'e', 'Ễ': 'e', 'Ệ': 'e',
-        'Í': 'i', 'Ì': 'i', 'Ỉ': 'i', 'Ĩ': 'i', 'Ị': 'i',
-        'Ó': 'o', 'Ò': 'o', 'Ỏ': 'o', 'Õ': 'o', 'Ọ': 'o',
-        'Ô': 'o', 'Ố': 'o', 'Ồ': 'o', 'Ổ': 'o', 'Ỗ': 'o', 'Ộ': 'o',
-        'Ơ': 'o', 'Ớ': 'o', 'Ờ': 'o', 'Ở': 'o', 'Ỡ': 'o', 'Ợ': 'o',
-        'Ú': 'u', 'Ù': 'u', 'Ủ': 'u', 'Ũ': 'u', 'Ụ': 'u',
-        'Ư': 'u', 'Ứ': 'u', 'Ừ': 'u', 'Ử': 'u', 'Ữ': 'u', 'Ự': 'u',
-        'Ý': 'y', 'Ỳ': 'y', 'Ỷ': 'y', 'Ỹ': 'y', 'Ỵ': 'y',
-    }
-    
-    result = ""
-    for char in text:
-        result += accents.get(char, char)
-    return result
-
-def generate_account_from_name(full_name):
-    """
-    Tạo tài khoản từ tên đầy đủ theo định dạng:
-    - Email: tên không dấu + số random 4-6 ký tự + @domain
-    - Mật khẩu: tên không dấu + 3-5 số random + 2 ký tự đặc biệt + "tghieux" + 3 số random
-    """
-    # 1. Chuyển tên thành không dấu và viết thường liền nhau
-    name_no_accents = remove_accents(full_name)
-    name_clean = re.sub(r'[^a-zA-Z]', '', name_no_accents).lower()
-    
-    # 2. Tạo email: truongminhkhanh(số random 4-6)@hotmail.com
-    email_random_length = random.randint(4, 6)
-    email_random_number = ''.join(random.choices(string.digits, k=email_random_length))
-    email = f"{name_clean}{email_random_number}@hotmail.com"
-    
-    # 3. Tạo mật khẩu: tên + 3-5 số + 2 ký tự đặc biệt + tghieux + 3 số
-    # Ký tự đặc biệt hợp lệ
-    special_chars = "!@#₫&"
-    
-    # Random 3-5 số
-    password_random_length = random.randint(2, 3)
-    password_random_part1 = ''.join(random.choices(string.digits, k=password_random_length))
-    
-    # Random 2 ký tự đặc biệt
-    special_chars_part = ''.join(random.choices(special_chars, k=2))
-    
-    # Random 3 số cuối
-    password_random_part2 = ''.join(random.choices(string.digits, k=3))
-    
-    # Ghép mật khẩu
-    password = f"{name_clean}{password_random_part1}{special_chars_part}tghieux{password_random_part2}!"
-    
-    return {"email": email, "password": password}
 
 # ================= DEBUG UTILS =================
 def debug_save_html(filename, html_content):
@@ -496,15 +425,9 @@ def get_random_user_agent():
     return random.choice(user_agent_reg)
 
 def ten_gha():
-    """Tạo tên giả - Cập nhật để phù hợp với định dạng mới"""
-    first = ["Trương", "Nguyễn", "Lê", "Phạm", "Hoàng", "Phan", "Vũ", "Đặng", "Bùi", "Đỗ", 
-             "Hồ", "Ngô", "Dương", "Lý", "Trần", "Đoàn", "Vương", "Trịnh", "Đinh", "Lâm"]
-    mid = ["Minh", "Thanh", "Quốc", "Hữu", "Đức", "Văn", "Thị", "Công", "Xuân", "Hồng",
-           "Thu", "Hải", "Tuấn", "Kim", "Ngọc", "Bảo", "Gia", "Thế", "Việt", "Nam"]
-    last = ["Khánh", "Anh", "Phương", "Huy", "Duy", "Long", "Khang", "Thịnh", "Nhật", "Linh",
-            "My", "Ngân", "Thy", "Trang", "Nhi", "Vy", "Uyên", "Lam", "Tú", "Hằng"]
-    
-    # Tạo tên theo định dạng họ + tên đệm + tên
+    first = ["Bạch","Uyển","Cố","Sở","Trạch","Lam","Thanh","Mặc","Kim","Thiên","Hồng","Kính","Thủy","Kiều","Minh","Nhật","Băng","Hải","Tâm","Phi"]
+    mid = ["Vũ","Hạ","Tỉnh","Vân","Khúc","Ảnh","Huyết","Vô","Tuyệt","Mệnh","Ngản","Ngạn","Bi","Lưu","Tĩnh","Lộ","Phong","Tư","Khiết","Vĩ"]
+    last = ["Khách","Xuẫn","Nghi","Ninh","Nhạn","Quân","Hiên","Lâm","歌","琴","郎","箫","楼","塔","叶","燕","府","徒","豪"]
     return f"{random.choice(first)} {random.choice(mid)} {random.choice(last)}"
 
 def birth():
@@ -513,7 +436,6 @@ def birth():
     day = random.randint(1, 28)
     return f"{day:02d}/{month:02d}/{year}"
 
-# CÁC HÀM CŨ GIỮ NGUYÊN NHƯNG KHÔNG DÙNG NỮA
 def matkhau(length=15):
     chars = string.ascii_letters + string.digits + "!@#"
     return ''.join(random.choice(chars) for _ in range(length))
@@ -633,7 +555,7 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
         
         print(f"{get_time_tag()}     [✅] Tìm thấy form mobile")
         
-        # Thu thập các field
+        # Thu thập các fiel
         form_data = {}
         
         for inp in form.find_all('input'):
@@ -649,7 +571,6 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
         lastname = " ".join(parts[1:]) if len(parts) > 1 else firstname
         day, month, year = birthday.split("/")
         
-        
         # Cập nhật form data
         form_data.update({
             'firstname': firstname,
@@ -662,6 +583,7 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
             'birthday_year': year,
             'sex': str(random.choice([1, 2])),  # 1=Nữ, 2=Nam
         })
+        
         # Xử lý action URL
         action = form.get('action', '')
         if action.startswith('/'):
@@ -826,7 +748,6 @@ def simple_facebook_registration(session, fullname, email, password, birthday):
         
         # Thêm thông tin
         parts = fullname.split()
-        time.sleep(1.2)
         firstname = parts[0]
         lastname = " ".join(parts[1:]) if len(parts) > 1 else firstname
         day, month, year = birthday.split("/")
@@ -958,18 +879,12 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
         tg_edit(chat_id, msg_id, f"{get_time_tag()} ⏳ Đang chuẩn bị thông tin...")
         time.sleep(random.uniform(1.0, 2.0))
         
-        # Tạo thông tin account theo định dạng mới
+        # Tạo thông tin account
         fullname = ten_gha()
+        email = mail_ao()
+        password = matkhau()
         birthday = birth()
         
-        # Sử dụng hàm mới để tạo email và password theo định dạng yêu cầu
-        account_info = generate_account_from_name(fullname)
-        email = account_info["email"]
-        password = account_info["password"]
-        
-        print(f"{get_time_tag()} [INFO] Tên: {fullname}")
-        print(f"{get_time_tag()} [INFO] Email: {email}")
-        print(f"{get_time_tag()} [INFO] Password: {password}")
 
         # Tạo session
         tg_edit(chat_id, msg_id, f"{get_time_tag()} 🌐 Đang tạo session...")
@@ -1118,7 +1033,7 @@ def format_result(d, success):
         𐔌. FB    : /tg.nux — Trung Hiếu
    """
     )
-    
+
     return (
         f"<b>{status_color} REG {'THÀNH CÔNG' if is_live else 'THẤT BẠI'} {'🎊' if is_live else '❌'}</b>\n"
         "<code><i>Thông tin acc bên dưới:</i></code>      ᓚ₍⑅^..^₎ฅ\n"
@@ -1126,7 +1041,7 @@ def format_result(d, success):
         f"│ 👤 Tên: ⤷ ゛<code>{html_escape(d['name'])}</code>  ˎˊ˗\n"
         f"│ 📧 Email: <code>{html_escape(d['email'])}</code>\n"
         f"│ 🔑 Mật khẩu: <tg-spoiler><code>{(d['password'])}</code></tg-spoiler>\n"
-        f"│ 📌 Trạng thái: <b>🟢Live!</b>      ୨ৎ⊹ˑ ֗\n"
+        f"│ 📌 Trạng thái: <b>🟢 Live!</b>      ୨ৎ⊹ˑ ֗\n"
         f"│ 🆔 UID: <code>{html_escape(d['uid'])}</code>\n"
         f"│ 🔗 Profile: {'https://www.facebook.com/profile.php?id=' + html_escape(d['uid']) if d['uid'] != '0' else 'Không có'}\n"
         f"│ 🍪 Cookies: <code>{html_escape(d['cookies'])}</code>\n"
@@ -1135,7 +1050,7 @@ def format_result(d, success):
         "╰───｡𖦹°‧──────˙⟡────⭓\n"
         f"<b><i>Chúc bạn một buổi tốt lành!</i></b>\n"
         f"<b><i>Người sử dụng bot: {user_name}</i></b>  /ᐠ - ˕-マ⌒\n" 
-        f"<b><i>Bot phục vụ bạn: @nuxw_bot</i></b>   ᶻ 𝗓 𐰁 .ᐟ\n\n"
+        f"<b><i>Bot phục vụ bạn: @nuxw_bot</i></b>\n\n"
     )
 
 # ================= BOT HANDLERS =================
@@ -1365,4 +1280,4 @@ while True:
         elif cmd == "/help" or cmd == f"/help{BOT_USERNAME}":
             handle_help(chat_id, message_id)
 
-    time.sleep(1) 
+    time.sleep(1)
