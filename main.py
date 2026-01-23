@@ -1,4 +1,3 @@
-
 import keep_alive 
 import os
 import time
@@ -12,7 +11,7 @@ import platform
 import sys
 import threading
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse, quote
+from urllib.parse import urlparse, quote, urljoin
 keep_alive.keep_alive()
 
 # ================= CONFIG TELEGRAM =================
@@ -459,18 +458,26 @@ def decode_response_content(response):
         return str(response.content)
 
 def create_session_with_retry(retries=3):
-    # ... (giữ nguyên hàm create_session_with_retry)
-    """Tạo session với proxy"""
+    """Tạo session với proxy - OPTIMIZED FOR RAILWAY"""
     proxy_str = get_proxy_for_account()
     
     for attempt in range(retries):
         try:
             session = requests.Session()
-            user_agent = get_random_user_agent()
             
-            session.headers.update({
+            # User agent ngẫu nhiên
+            user_agents = [
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1'
+            ]
+            user_agent = random.choice(user_agents)
+            
+            # Headers cho Facebook
+            headers = {
                 'User-Agent': user_agent,
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
                 'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
                 'Accept-Encoding': 'gzip, deflate',
                 'Connection': 'keep-alive',
@@ -481,100 +488,178 @@ def create_session_with_retry(retries=3):
                 'Sec-Fetch-User': '?1',
                 'Cache-Control': 'max-age=0',
                 'DNT': '1',
-            })
+            }
+            
+            session.headers.update(headers)
             
             if proxy_str:
                 session.proxies.update({
                     'http': proxy_str,
                     'https': proxy_str
                 })
-                
-            response = session.get("https://www.facebook.com/reg/", timeout=15)
+            
+            # Bypass SSL warnings
+            session.verify = False
+            import warnings
+            warnings.filterwarnings('ignore', message='Unverified HTTPS request')
+            
+            # Test connection
+            test_url = "https://mbasic.facebook.com"
+            response = session.get(test_url, timeout=15)
             
             if response.status_code == 200:
-                content = decode_response_content(response)
-                if 'sign up' in content.lower() or 'đăng ký' in content.lower() or 'reg_email__' in content:
-                    return session
-
-        except Exception as e:
-            time.sleep(3)
-    
-    for attempt in range(retries):
-        try:
-            session = requests.Session()
-            mobile_agents = [
-                'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
-                'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
-                'Mozilla/5.0 (Linux; Android 14; SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36'
-                'Mozilla/5.0 (iPhone; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/549.4 (KHTML, like Gecko) Version/10.5.35 Mobile/FD6B83 Safari/549.4',
-                'Mozilla/5.0 (iPhone; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/12.5.34 Mobile/Y03Z1S Safari/602.5',
-                'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2 like Mac OS X) AppleWebKit/545.27.7 (KHTML, like Gecko) Version/12.2.81 Mobile/Z3XCRI Safari/545.27.7',
-                'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/560.18 (KHTML, like Gecko) Version/10.3 Mobile/LQ9VEC Safari/560.18',
-                'Mozilla/5.0 (iPhone; U; CPU iPhone OS 11_0_7 like Mac OS X; en-US) AppleWebKit/535.21.31 (KHTML, like Gecko) Version/13.1.2 Mobile/8C3 Safari/6533.18.5',
-            ]
-            user_agent = random.choice(mobile_agents)
-            
-            session.headers.update({
-                'User-Agent': user_agent,
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-                'Accept-Encoding': 'gzip, deflate',
-            })
-
-            if proxy_str:
-                session.proxies.update({'http': proxy_str, 'https': proxy_str})
+                print(f"{get_time_tag()} ✅ Session created successfully")
+                return session
+            else:
+                print(f"{get_time_tag()} ⚠️ Session test failed: {response.status_code}")
                 
-            response = session.get("https://www.facebook.com/reg/", timeout=15)
-            
-            if response.status_code == 200:
-                content = decode_response_content(response)
-                if "facebook" in content.lower():
-                    return session
         except Exception as e:
+            print(f"{get_time_tag()} ⚠️ Session attempt {attempt + 1} failed: {str(e)[:50]}")
             time.sleep(2)
     
-    raise Exception("Không thể tạo session")
+    # Fallback: Session đơn giản
+    try:
+        session = requests.Session()
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        })
+        session.verify = False
+        return session
+    except:
+        raise Exception("Không thể tạo session")
 
-
-def extract_form_fields_with_csrf(soup):
-    """Trích xuất form và fields kèm CSRF token"""
-    forms = soup.find_all('form')
-    if not forms:
-        return None, {}
+# ================= IMPROVED FORM EXTRACTION =================
+def extract_form_fields_with_csrf(soup, response_url=None):
+    """Trích xuất form và fields kèm CSRF token - IMPROVED VERSION"""
+    print(f"{get_time_tag()} 🔍 Searching for registration form...")
+    
+    all_forms = soup.find_all('form')
+    print(f"{get_time_tag()}     Found {len(all_forms)} forms in page")
+    
+    if not all_forms:
+        # Try to find form-like divs
+        form_divs = soup.find_all('div', {'role': 'form'})
+        if form_divs:
+            print(f"{get_time_tag()}     Found {len(form_divs)} form divs")
+            # Create a dummy form from div
+            dummy_form = BeautifulSoup('<form method="post"></form>', 'html.parser').form
+            # Add inputs from div
+            inputs = form_divs[0].find_all('input')
+            for inp in inputs:
+                dummy_form.append(inp)
+            all_forms = [dummy_form]
     
     reg_form = None
-    for form in forms:
+    best_score = 0
+    
+    for i, form in enumerate(all_forms):
+        score = 0
         form_html = str(form).lower()
-        if any(keyword in form_html for keyword in ['register', 'sign up', 'đăng ký']):
+        form_text = form.get_text().lower()
+        
+        # Kiểm tra các keyword quan trọng
+        keywords = ['sign', 'register', 'đăng ký', 'create account', 'tạo tài khoản']
+        for keyword in keywords:
+            if keyword in form_html:
+                score += 3
+            if keyword in form_text:
+                score += 2
+        
+        # Kiểm tra các field đăng ký
+        inputs = form.find_all('input')
+        for inp in inputs:
+            name = inp.get('name', '').lower()
+            if any(field in name for field in ['first', 'last', 'email', 'pass', 'birth', 'sex']):
+                score += 2
+            if inp.get('type') in ['text', 'email', 'password']:
+                score += 1
+        
+        # Kiểm tra method POST
+        if form.get('method', '').lower() == 'post':
+            score += 2
+        
+        # Kiểm tra action
+        action = form.get('action', '')
+        if action and any(key in action.lower() for key in ['/reg', '/signup', '/r.php']):
+            score += 3
+        
+        print(f"{get_time_tag()}     Form {i}: score={score}, inputs={len(inputs)}")
+        
+        if score > best_score:
+            best_score = score
             reg_form = form
-            break
+    
+    if not reg_form and all_forms:
+        # Fallback: lấy form có nhiều input nhất
+        reg_form = max(all_forms, key=lambda f: len(f.find_all('input')))
+        print(f"{get_time_tag()}     Using form with most inputs: {len(reg_form.find_all('input'))}")
     
     if not reg_form:
-        # Lấy form đầu tiên có action
-        for form in forms:
-            if form.get('action'):
-                reg_form = form
-                break
-        
-        if not reg_form:
-            reg_form = forms[0]
+        print(f"{get_time_tag()} ❌ No form found at all")
+        return None, {}
     
+    print(f"{get_time_tag()} ✅ Selected form with {len(reg_form.find_all('input'))} inputs, score={best_score}")
+    
+    # Extract fields
     fields = {}
     
     # Lấy tất cả input fields
     for inp in reg_form.find_all('input'):
         name = inp.get('name')
         value = inp.get('value', '')
-        if name and name not in ['', 'submit', 'cancel']:
-            fields[name] = value
+        inp_type = inp.get('type', '').lower()
+        
+        if name and name not in ['', 'submit', 'cancel', 'login']:
+            if inp_type in ['hidden', 'submit', 'button']:
+                fields[name] = value
+            else:
+                fields[name] = ''  # Để trống, sẽ điền sau
+    
+    # Lấy select fields
+    for select in reg_form.find_all('select'):
+        name = select.get('name')
+        if name:
+            # Lấy option đầu tiên
+            first_option = select.find('option')
+            if first_option:
+                fields[name] = first_option.get('value', '')
+            else:
+                fields[name] = ''
     
     # Tìm các token quan trọng
-    important_fields = ['fb_dtsg', 'jazoest', 'lsd', 'li', '__a', '__req']
-    for inp in reg_form.find_all('input'):
+    important_fields = ['fb_dtsg', 'jazoest', 'lsd', 'li', '__a', '__req', '__csr', '__spin_r', '__spin_b', '__spin_t']
+    
+    # Tìm trong cả page
+    for inp in soup.find_all('input'):
         name = inp.get('name', '')
         value = inp.get('value', '')
         if name in important_fields and value:
             fields[name] = value
+    
+    # Tìm trong script tags
+    script_text = str(soup)
+    token_patterns = [
+        r'"fb_dtsg"[^:]*:"([^"]+)"',
+        r'fb_dtsg["\']?\s*[:=]\s*["\']([^"\']+)["\']',
+        r'name="fb_dtsg"\s+value="([^"]+)"',
+        r'jazoest["\']?\s*[:=]\s*["\']([^"\']+)["\']',
+        r'name="jazoest"\s+value="([^"]+)"'
+    ]
+    
+    for pattern in token_patterns:
+        matches = re.findall(pattern, script_text)
+        for match in matches:
+            if 'fb_dtsg' in pattern and 'fb_dtsg' not in fields:
+                fields['fb_dtsg'] = match
+            elif 'jazoest' in pattern and 'jazoest' not in fields:
+                fields['jazoest'] = match
+    
+    print(f"{get_time_tag()}     Extracted {len(fields)} fields")
+    if 'fb_dtsg' in fields:
+        print(f"{get_time_tag()}     Found fb_dtsg: {fields['fb_dtsg'][:20]}...")
+    if 'jazoest' in fields:
+        print(f"{get_time_tag()}     Found jazoest: {fields['jazoest'][:20]}...")
     
     return reg_form, fields
 
@@ -585,100 +670,257 @@ def register_with_mbasic(session, fullname, email, password, birthday, chat_id, 
         
         update_func(chat_id, msg_id, f"{get_time_tag()} 🌐 Đang tải trang đăng ký...")
         
-        # Thử www.facebook.com trước
-        response = session.get("https://www.facebook.com/reg/", timeout=40)
+        # THỬ NHIỀU URL KHÁC NHAU
+        urls_to_try = [
+            "https://mbasic.facebook.com/reg/",
+            "https://m.facebook.com/reg/",
+            "https://www.facebook.com/reg/",
+            "https://mbasic.facebook.com/r.php",
+            "https://m.facebook.com/r.php"
+        ]
         
-        if response.status_code != 200:
-            print(f"{get_time_tag()} ❌ HTTP Error {response.status_code}")
-            return False, f"HTTP Error {response.status_code}", None
+        response = None
+        soup = None
         
-        content = decode_response_content(response)
+        for url in urls_to_try:
+            try:
+                print(f"{get_time_tag()}     Trying URL: {url}")
+                response = session.get(url, timeout=30, allow_redirects=True)
+                
+                if response.status_code == 200:
+                    content = decode_response_content(response)
+                    if any(keyword in content.lower() for keyword in ['sign up', 'register', 'đăng ký', 'create account']):
+                        print(f"{get_time_tag()}     [✅] Found registration page at {url}")
+                        soup = BeautifulSoup(content, 'html.parser')
+                        break
+                    else:
+                        print(f"{get_time_tag()}     [⚠️] Not a registration page")
+                else:
+                    print(f"{get_time_tag()}     [❌] HTTP {response.status_code}")
+                    
+            except Exception as e:
+                print(f"{get_time_tag()}     [❌] Error with {url}: {str(e)[:50]}")
+                continue
+        
+        if not response or response.status_code != 200:
+            return False, f"Không thể truy cập trang đăng ký (HTTP {response.status_code if response else 'No response'})", None
+        
+        if not soup:
+            content = decode_response_content(response)
+            soup = BeautifulSoup(content, 'html.parser')
         
         time.sleep(random.uniform(1.5, 2.5))
         
-        soup = BeautifulSoup(content, 'html.parser')
-        form, fields = extract_form_fields_with_csrf(soup)
+        # Extract form
+        form, fields = extract_form_fields_with_csrf(soup, response.url)
         
         if not form:
-            print(f"{get_time_tag()} ❌ No registration form found")
+            # Debug: Save HTML for analysis
+            try:
+                debug_content = str(soup)[:2000]
+                print(f"{get_time_tag()}     [DEBUG] First 2000 chars of HTML: {debug_content}")
+            except:
+                pass
             return False, "Không tìm thấy form đăng ký", None
         
+        # Prepare registration data
         parts = fullname.split()
         firstname = parts[0]
         lastname = " ".join(parts[1:]) if len(parts) > 1 else parts[0]
         day, month, year = birthday.split("/")
 
-        # Thêm thông tin vào fields
-        fields.update({
-            'firstname': firstname,
-            'lastname': lastname,
-            'reg_email__': email,
-            'reg_email_confirmation__': email,
-            'reg_passwd__': password,
-            'birthday_day': day,
-            'birthday_month': month,
-            'birthday_year': year,
-            'sex': str(random.choice([1, 2])),  # 1: female, 2: male
-        })
-        
-        # Lấy action URL
-        action = form.get('action', '')
-        if not action or action == '#':
-            action = '/reg/'
+        # Map fields intelligently
+        field_mapping = {}
+        for field_name in fields.keys():
+            field_lower = field_name.lower()
             
-        if action.startswith('/'):
-            action_url = 'https://www.facebook.com' + action
+            # First name
+            if any(keyword in field_lower for keyword in ['first', 'given', 'ten']):
+                if 'last' not in field_lower:
+                    field_mapping['firstname'] = field_name
+            
+            # Last name
+            elif any(keyword in field_lower for keyword in ['last', 'family', 'ho']):
+                field_mapping['lastname'] = field_name
+            
+            # Email
+            elif any(keyword in field_lower for keyword in ['email', 'mail']):
+                field_mapping['email'] = field_name
+                # Find confirmation field
+                for confirm_field in fields.keys():
+                    if confirm_field != field_name and 'confirm' in confirm_field.lower():
+                        field_mapping['email_confirm'] = confirm_field
+            
+            # Password
+            elif any(keyword in field_lower for keyword in ['pass', 'pwd']):
+                field_mapping['password'] = field_name
+        
+        # Fill in the data
+        if 'firstname' in field_mapping:
+            fields[field_mapping['firstname']] = firstname
         else:
-            action_url = action
+            # Try common field names
+            for name in ['firstname', 'first_name', 'fname', 'given-name']:
+                if name in fields:
+                    fields[name] = firstname
+                    break
+        
+        if 'lastname' in field_mapping:
+            fields[field_mapping['lastname']] = lastname
+        else:
+            for name in ['lastname', 'last_name', 'lname', 'family-name']:
+                if name in fields:
+                    fields[name] = lastname
+                    break
+        
+        if 'email' in field_mapping:
+            fields[field_mapping['email']] = email
+            if 'email_confirm' in field_mapping:
+                fields[field_mapping['email_confirm']] = email
+        else:
+            for name in ['reg_email__', 'email', 'reg_email', 'email__']:
+                if name in fields:
+                    fields[name] = email
+                    # Try to find confirmation
+                    for confirm_name in [f'{name}_confirmation__', f'confirm_{name}', f'{name}__confirmation']:
+                        if confirm_name in fields:
+                            fields[confirm_name] = email
+                    break
+        
+        if 'password' in field_mapping:
+            fields[field_mapping['password']] = password
+        else:
+            for name in ['reg_passwd__', 'password', 'pass', 'reg_passwd']:
+                if name in fields:
+                    fields[name] = password
+                    break
+        
+        # Birthday
+        for field_name in fields.keys():
+            field_lower = field_name.lower()
+            if 'day' in field_lower or 'ngay' in field_lower:
+                fields[field_name] = day
+            elif 'month' in field_lower or 'thang' in field_lower:
+                fields[field_name] = month
+            elif 'year' in field_lower or 'nam' in field_lower:
+                fields[field_name] = year
+        
+        # Gender
+        gender_added = False
+        for field_name in fields.keys():
+            field_lower = field_name.lower()
+            if 'sex' in field_lower or 'gender' in field_lower or 'gioitinh' in field_lower:
+                fields[field_name] = str(random.choice([1, 2]))
+                gender_added = True
+                break
+        
+        if not gender_added:
+            # Try common gender field names
+            for name in ['sex', 'gender']:
+                if name in fields:
+                    fields[name] = str(random.choice([1, 2]))
+                    break
+        
+        # Remove empty submit fields
+        for field_name in list(fields.keys()):
+            if 'submit' in field_name.lower() or field_name.lower() in ['submit', 'register', 'sign up']:
+                if not fields[field_name]:
+                    del fields[field_name]
+        
+        # Get action URL
+        action = form.get('action', '')
+        base_url = response.url
+        
+        if not action or action in ['#', '']:
+            action = url
+        
+        if action.startswith('http'):
+            submit_url = action
+        elif action.startswith('/'):
+            parsed_base = urlparse(base_url)
+            domain = f"{parsed_base.scheme}://{parsed_base.netloc}"
+            submit_url = domain + action
+        else:
+            submit_url = urljoin(base_url, action)
+        
+        print(f"{get_time_tag()} 📤 Submitting to: {submit_url}")
+        print(f"{get_time_tag()} 📊 Data fields: {len(fields)}")
         
         update_func(chat_id, msg_id, f"{get_time_tag()} 📤 Đang gửi đơn đăng ký...")
         
-        # Thêm referer
-        session.headers.update({'Referer': 'https://www.facebook.com/reg/'})
+        # Add referer
+        session.headers.update({'Referer': response.url})
         
-        # Gửi form với timeout dài
-        response = session.post(action_url, data=fields, timeout=60, allow_redirects=True)
+        # Submit form
+        submit_response = session.post(submit_url, data=fields, timeout=60, allow_redirects=True)
         
         time.sleep(random.uniform(3.0, 4.0))
         
-        # Lấy cookies
+        # Get cookies
         cookies_dict = {}
         for cookie in session.cookies:
             cookies_dict[cookie.name] = cookie.value
         
         uid = cookies_dict.get('c_user', '0')
         
-        content = decode_response_content(response)
+        content = decode_response_content(submit_response)
+        final_url = submit_response.url
         
+        print(f"{get_time_tag()} 🔍 Response URL: {final_url}")
         print(f"{get_time_tag()} 🔍 UID from cookies: {uid}")
+        print(f"{get_time_tag()} 🔍 Response length: {len(content)} chars")
         
-        # Kiểm tra kết quả
+        # Check results
         if uid and uid != '0':
             print(f"{get_time_tag()} ✅ Registration successful, UID: {uid}")
             return True, "Thành công", uid
-            
-        elif any(keyword in content.lower() for keyword in ['confirm', 'xác nhận', 'mã', 'code', 'email sent']):
-            print(f"{get_time_tag()} ⚠️ Need email confirmation")
-            return True, "Cần xác nhận email", uid
-            
-        elif 'checkpoint' in response.url.lower():
-            print(f"{get_time_tag()} ⚠️ Checkpoint required")
+        
+        # Check for success indicators
+        success_keywords = ['welcome', 'home', 'news feed', 'profile', 'confirmed', 'xác nhận', 'continue', 'tiếp tục']
+        for keyword in success_keywords:
+            if keyword in content.lower() or keyword in final_url.lower():
+                # Try to extract UID from content
+                uid_patterns = [
+                    r'c_user=(\d+)',
+                    r'profile\.php\?id=(\d+)',
+                    r'id=(\d+)',
+                    r'uid=(\d+)'
+                ]
+                for pattern in uid_patterns:
+                    match = re.search(pattern, content)
+                    if match:
+                        uid = match.group(1)
+                        print(f"{get_time_tag()} ✅ Found UID in content: {uid}")
+                        return True, "Thành công", uid
+                
+                return True, "Cần xác nhận email", uid
+        
+        # Check for checkpoint
+        if 'checkpoint' in final_url.lower() or 'security' in final_url.lower():
             return True, "Cần xác minh bảo mật", uid
-            
-        elif 'error' in content.lower():
-            # Tìm thông báo lỗi
-            soup2 = BeautifulSoup(content, 'html.parser')
-            error_div = soup2.find('div', class_=re.compile(r'error|alert|warning'))
-            if error_div:
-                error_text = error_div.get_text(strip=True)[:100]
+        
+        # Check for errors
+        error_patterns = [
+            r'class="[^"]*error[^"]*"[^>]*>([^<]+)',
+            r'id="error"[^>]*>([^<]+)',
+            r'>([^<]*error[^<]*)<',
+            r'alert[^>]*>([^<]+)',
+            r'dialog[^>]*>([^<]+)'
+        ]
+        
+        for pattern in error_patterns:
+            matches = re.findall(pattern, content, re.IGNORECASE)
+            if matches:
+                error_text = matches[0].strip()[:100]
                 return False, f"Lỗi: {error_text}", uid
-            else:
-                return False, "Facebook báo lỗi", uid
-        else:
-            return False, "Không xác định được kết quả", uid
+        
+        # Default
+        return False, "Không xác định được kết quả", uid
 
     except Exception as e:
         print(f"{get_time_tag()} ❌ Registration error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return False, f"Lỗi: {str(e)[:100]}", None
 
 def get_account_cookies(session):
@@ -711,6 +953,12 @@ def cookies_to_string(cookies_dict):
 
 # ================= MAIN REGISTRATION FUNCTION =================
 def reg_single_account(chat_id, user_id, user_name, message_id):
+    """Hàm đăng ký chính - OPTIMIZED"""
+    if chat_id in RUNNING_CHAT:
+        tg_send(chat_id, "⏳ Đang reg acc trước đó, vui lòng chờ...", reply_to_message_id=message_id)
+        return
+    
+    RUNNING_CHAT.add(chat_id)
     msg_id = tg_send(chat_id, f"{get_time_tag()} 🚀 Bắt đầu reg...", reply_to_message_id=message_id) 
     if not msg_id:
         RUNNING_CHAT.remove(chat_id)
@@ -718,6 +966,7 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
 
     session = None
     try:
+        # Bước 1: Chuẩn bị thông tin
         tg_edit(chat_id, msg_id, f"{get_time_tag()} ⏳ Đang chuẩn bị thông tin...")
         time.sleep(random.uniform(1.0, 2.0))
         
@@ -726,15 +975,32 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
         password = matkhau()
         birthday = birth()
 
-        tg_edit(chat_id, msg_id, f"{get_time_tag()} 🌐 Đang kết nối...")
-        time.sleep(random.uniform(1.5, 2.5))
-        session = create_session_with_retry()
+        # Hiển thị thông tin
+        tg_edit(chat_id, msg_id, 
+            f"{get_time_tag()} 📝 Thông tin acc:\n"
+            f"• Tên: {fullname}\n"
+            f"• Email: {email}\n"
+            f"• Pass: {password[:8]}...\n"
+            f"• Sinh nhật: {birthday}"
+        )
+        time.sleep(2)
 
+        # Bước 2: Tạo session
+        tg_edit(chat_id, msg_id, f"{get_time_tag()} 🌐 Đang tạo session...")
+        session = create_session_with_retry()
+        if not session:
+            tg_edit(chat_id, msg_id, f"{get_time_tag()} ❌ Không tạo được session")
+            RUNNING_CHAT.remove(chat_id)
+            return
+        
+        # Bước 3: Đăng ký
+        tg_edit(chat_id, msg_id, f"{get_time_tag()} 📱 Đang đăng ký...")
         success, message, uid = register_with_mbasic(
             session, fullname, email, password, birthday, 
             chat_id, msg_id, tg_edit
         )
 
+        # Bước 4: Xử lý kết quả
         cookies_dict = get_account_cookies(session)
         cookie_str = cookies_to_string(cookies_dict)
         
@@ -764,6 +1030,7 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
             "message": message
         }
 
+        # Hiển thị kết quả
         tg_edit(chat_id, msg_id, format_result(result, success))
         
         # Lưu account nếu có UID thực
@@ -778,6 +1045,8 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
         }
         tg_edit(chat_id, msg_id, format_result(error_result, False))
         print(f"{get_time_tag()} ❌ System error: {e}")
+        import traceback
+        traceback.print_exc()
 
     finally:
         RUNNING_CHAT.remove(chat_id)
