@@ -15,7 +15,7 @@ from urllib.parse import urlparse, quote
 keep_alive.keep_alive()
 
 # ================= CONFIG TEALWAY =================
-RAILWAY_MODE = True  # Luôn bật cho Railway
+RAILWAY_MODE = os.getenv('RAILWAY_ENVIRONMENT', 'False').lower() == 'true'
 BOT_TOKEN = "8251269112:AAEuO_mDQ8wcivcMDjXwc_srXcTHgvTjQI8"
 API = f"https://api.telegram.org/bot{BOT_TOKEN}"
 UID_FILE = "tele_uid.txt"
@@ -29,8 +29,8 @@ MANDATORY_GROUP_ID = -1003444341292
 MANDATORY_GROUP_TITLE = "𝗣𝗮𝗿𝗮𝗴𝗼𝗻 𝗦𝗲𝗹 ᵎ!ᵎ 𝐟𝐫𝐬 𝐜𝐨𝐝𝐞"
 
 # ================= CONFIG REGISTRATION =================
-# RAILWAY CONFIG - KHÔNG DÙNG PROXY TRÊN RAILWAY
-USE_PROXY = False  # Railway không cần proxy
+# RAILWAY CONFIG
+USE_PROXY = True if RAILWAY_MODE else True  # Railway không cần proxy
 
 proxy_reg = [
     "sp06v4-01.proxymmo.me:20393:sp06v405-20393:PDQLU"
@@ -104,28 +104,86 @@ def generate_account_from_name(full_name):
     email = f"{name_clean}{email_random_number}@hotmail.com"
     
     # 3. Tạo mật khẩu: tên + 3-5 số + 2 ký tự đặc biệt + tghieux + 3 số
-    special_chars = "!@#$&"
+    # Ký tự đặc biệt hợp lệ
+    special_chars = "!@#₫&"
     
-    password_random_length = random.randint(3, 5)
+    # Random 3-5 số
+    password_random_length = random.randint(2, 3)
     password_random_part1 = ''.join(random.choices(string.digits, k=password_random_length))
     
+    # Random 2 ký tự đặc biệt
     special_chars_part = ''.join(random.choices(special_chars, k=2))
     
+    # Random 3 số cuối
     password_random_part2 = ''.join(random.choices(string.digits, k=3))
     
-    password = f"{name_clean}{password_random_part1}{special_chars_part}tghieux{password_random_part2}"
+    # Ghép mật khẩu
+    password = f"{name_clean}{password_random_part1}{special_chars_part}tghieux{password_random_part2}!"
     
     return {"email": email, "password": password}
 
 # ================= DEBUG UTILS =================
 def debug_save_html(filename, html_content):
     """Lưu HTML để debug trên Railway"""
-    try:
-        with open(filename, "w", encoding="utf-8") as f:
-            f.write(html_content[:5000])
-        print(f"{get_time_tag()} [DEBUG] Đã lưu {filename}")
-    except:
-        pass
+    if RAILWAY_MODE:
+        try:
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(html_content[:5000])
+            print(f"{get_time_tag()} [DEBUG] Đã lưu {filename}")
+        except:
+            pass
+
+# ================= HUMAN-LIKE TYPING EFFECT =================
+def human_type_effect(text, element_name="form"):
+    """Hiệu ứng gõ chữ như người thật"""
+    if not text:
+        return
+    
+    max_total_time = 15.0
+    avg_time_per_char = min(0.2, max_total_time / max(len(text), 1))
+    
+    typed = ""
+    for char in text:
+        typed += char
+        
+        if char.isalpha() or char.isdigit():
+            delay = random.uniform(0.05, 0.15)
+        elif char in ' .,;:!?':
+            delay = random.uniform(0.1, 0.25)
+        else:
+            delay = random.uniform(0.08, 0.18)
+        
+        delay = min(delay, avg_time_per_char * 1.5)
+        time.sleep(delay)
+    
+    time.sleep(random.uniform(0.3, 0.8))
+    return typed
+
+def is_private_chat(chat_id):
+    return chat_id > 0
+    
+PRIVATE_ONLY_MSG = (
+    "<b>⛔ LƯU Ý TỪ BOT!!!</b>\n"
+    "━━━━━━━━━━━━━━━━\n"
+    "␥ <b><i>Bot chỉ hoạt động trong Tin nhắn riêng (Private), không hỗ trợ sử dụng trong group!.</i></b>\n"
+    "␥ Vui lòng nhắn tin riêng cho bot để tiếp tục sử dụng các tính năng!.\n"
+    "\n"
+ )
+
+COMMAND_ALLOW_GROUP = {
+    "/start": True,
+    "/regfb": False,
+    "/checkif": False,
+    "/myinfo": False,
+    "/help": False,
+    "/symbols": False,
+    "/symbols@nuxw_bot": False,
+    "/regfb@nuxw_bot": False,
+    "/checkif@nuxw_bot": False,
+    "/myinfo@nuxw_bot": False,
+    "/help@nuxw_bot": False,
+    "/start@nuxw_bot": True
+}
 
 # ================= TELEGRAM UTILS =================
 def get_time_tag():
@@ -161,6 +219,16 @@ def tg_edit(chat_id, msg_id, text, parse_mode="HTML"):
     except:
         pass
 
+def tg_delete_message(chat_id, message_id):
+    try:
+        requests.post(
+            f"{API}/deleteMessage",
+            data={"chat_id": chat_id, "message_id": message_id},
+            timeout=10
+        )
+    except:
+        pass
+
 def get_updates():
     global OFFSET
     try:
@@ -171,6 +239,12 @@ def get_updates():
     except:
         pass
     return []
+
+def self_destruct_message(chat_id, sent_msg_id, original_msg_id, delay=120):
+    """Tự động xoá tin nhắn sau delay"""
+    time.sleep(delay)
+    tg_delete_message(chat_id, sent_msg_id)
+    tg_delete_message(chat_id, original_msg_id)
 
 def check_group_membership(user_id):
     """Kiểm tra xem người dùng có phải là thành viên của MANDATORY_GROUP_ID không."""
@@ -196,7 +270,228 @@ def check_group_membership(user_id):
     except Exception as e:
         return False
 
+def block_group_if_needed(chat_id, text, message_id):
+    if chat_id < 0:
+        cmd = text.split()[0].lower()
+        if cmd in COMMAND_ALLOW_GROUP and not COMMAND_ALLOW_GROUP[cmd]:
+            tg_send(chat_id, PRIVATE_ONLY_MSG, reply_to_message_id=message_id)
+            return True
+    return False
+
+# ================= SAFE HELPER =================
+def safe_int(n):
+    """Chuyển đổi sang số nguyên, trả về 0 nếu thất bại."""
+    try:
+        return int(n)
+    except (ValueError, TypeError):
+        return 0
+
+def format_number(n):
+    """Định dạng số có dấu phẩy."""
+    return format(safe_int(n), ",")
+
+def format_created(time_str):
+    """Định dạng lại chuỗi thời gian 'dd/mm/yyyy||hh:mm:ss'"""
+    try:
+        parts = re.split(r'\|\||\s*\|\s*', time_str.strip())
+        if len(parts) >= 2:
+            d, t = parts[0], parts[1]
+            return f"{t} | {d}"
+        return time_str.replace("||", " | ")
+    except:
+        return "Không rõ"
+        
+def extract_uid_from_input(input_str):
+    """Trích xuất UID từ input"""
+    input_str = input_str.strip()
+    
+    if input_str.isdigit():
+        return input_str
+    
+    try:
+        url_encoded = quote(input_str)
+        res = requests.get(UID_API_URL + url_encoded, timeout=10).json()
+        
+        if res.get("status") == "success" and "uid" in res:
+            return res["uid"]
+        else:
+            return None
+    except Exception as e:
+        print(f"Lỗi khi lấy UID từ link: {e}")
+        return None
+
+def get_fb_info(uid):
+    """Lấy thông tin Facebook từ UID"""
+    try:
+        url = f"{API_INFO_URL}?uid={uid}&apikey={API_KEY}"
+        print(f"{get_time_tag()} 🔗 Gọi API: {url}")
+        
+        r = requests.get(url, timeout=15)
+        
+        try:
+            res = r.json()
+        except requests.exceptions.JSONDecodeError:
+            return {"error": f"API lỗi: Phản hồi không phải JSON. Code: {r.status_code}\nNội dung: {r.text[:200]}"}
+
+        if not isinstance(res, dict):
+            return {"error": f"Dữ liệu trả về không hợp lệ: {type(res)}"}
+
+        if 'error' in res:
+            error_msg = res.get('error', 'Lỗi không xác định từ API')
+            return {"error": f"API lỗi: {error_msg}"}
+        
+        if 'success' in res and not res['success']:
+            error_msg = res.get('message', 'Lỗi không xác định từ API')
+            return {"error": f"API lỗi: {error_msg}"}
+
+        if not res.get('name') and not res.get('uid'):
+            return {"error": "API trả về dữ liệu trống hoặc không hợp lệ"}
+
+        return {"success": True, "data": res}
+        
+    except requests.exceptions.Timeout:
+        return {"error": "Timeout: API không phản hồi sau 15 giây"}
+    except requests.exceptions.ConnectionError:
+        return {"error": "Lỗi kết nối: Không thể kết nối đến API"}
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Lỗi kết nối mạng: {e.__class__.__name__}"}
+    except Exception as e:
+        return {"error": f"Lỗi hệ thống: {e.__class__.__name__}: {str(e)}"}
+
+def create_caption(res):
+    """Tạo caption từ dữ liệu API"""
+    uid = res.get('uid', 'Không rõ')
+    
+    caption = (
+        "╭─────────────⭓\n"
+        f"│ 𝗡𝗮𝗺𝗲: <b>{html_escape(res.get('name','Không rõ'))}</b>\n"
+        f"│ 𝗨𝗜𝗗: <code>{html_escape(uid)}</code>\n"
+        f"│ 𝗨𝘀𝗲𝗿𝗡𝗮𝗺𝗲: {html_escape(res.get('username','Không rõ'))}\n"
+        f"│ 𝗟𝗶𝗻𝗸: <a href=\"{res.get('link_profile', f'https://facebook.com/{uid}')}\">Xem Profile</a>\n"
+    )
+    
+    if 'follower' in res:
+        caption += f"│ 𝗙𝗼𝗹𝗹𝗼𝘄𝗲𝗿𝘀: {format_number(res.get('follower'))} Người theo dõi\n"
+    
+    if 'created_time' in res:
+        caption += f"│ 𝗖𝗿𝗲𝗮𝘁𝗲𝗱: {format_created(res.get('created_time',''))}\n"
+    
+    if 'tichxanh' in res:
+        caption += f"│ 𝗩𝗲𝗿𝗶𝗳𝗶𝗲𝗱: {'Đã xác minh ✅' if res.get('tichxanh') else 'Chưa xác minh ❌'}\n"
+    
+    if 'relationship_status' in res:
+        caption += f"│ 𝗦𝘁𝗮𝘁𝘂𝘀: {html_escape(res.get('relationship_status','Không rõ'))}\n"
+
+    love = res.get("love")
+    if isinstance(love, dict) and love.get("name"):
+        caption += (
+            f"│ -> 💍 Đã kết hôn với: {html_escape(love.get('name'))}\n"
+            f"│ -> 🔗 Link UID: https://facebook.com/{love.get('id')}\n"
+        )
+
+    if 'about' in res:
+        bio = res.get('about', 'Không có dữ liệu!')
+        caption += f"│ 𝗕𝗶𝗼: {html_escape(bio[:200])}{'...' if len(bio) > 200 else ''}\n"
+    
+    if 'gender' in res:
+        gender = res.get('gender','Không rõ')
+        caption += f"│ 𝗚𝗲𝗻𝗱𝗲𝗿: {html_escape(gender.capitalize() if isinstance(gender, str) else gender)}\n"
+    
+    if 'hometown' in res:
+        caption += f"│ 𝗛𝗼𝗺𝗲𝘁𝗼𝘄𝗻: {html_escape(res.get('hometown','Không rõ'))}\n"
+    
+    if 'location' in res:
+        caption += f"│ 𝗟𝗼𝗰𝗮𝘁𝗶𝗼𝗻: {html_escape(res.get('location','Không rõ'))}\n"
+    
+    work_data = res.get("work", [])
+    if work_data:
+        caption += f"│ 𝗪𝗼𝗿𝗸:\n"
+        work_found = False
+        for w in work_data:
+            if not isinstance(w, dict):
+                continue
+            employer = w.get("employer", {}).get("name")
+            position = w.get("position", {}).get("name")
+            
+            if employer:
+                work_found = True
+                if position:
+                    caption += f"│ -> {html_escape(position)}: {html_escape(employer)}\n"
+                else:
+                    caption += f"│ -> Làm việc tại: {html_escape(employer)}\n"
+        
+        if not work_found:
+             caption += f"│ -> Không có dữ liệu công việc.\n"
+    else:
+        caption += f"│ 𝗪𝗼𝗿𝗸: Không có dữ liệu\n"
+
+    caption += (
+        "├─────────────⭓\n"
+        f"│ 𝗧𝗶𝗺𝗲 𝗨𝗽𝗱𝗮𝘁𝗲: <b>{datetime.datetime.now().strftime('%H:%M:%S | %d/%m/%Y')}</b>\n"
+        "╰─────────────⭓"
+    )
+    
+    return caption
+
 # ================= REGISTRATION FUNCTIONS =================
+def parse_proxy(proxy_str):
+    """Parse proxy string"""
+    try:
+        if not isinstance(proxy_str, str):
+            return None
+            
+        if ":" not in proxy_str:
+            return None
+        
+        parts = proxy_str.split(":")
+        
+        # Format: host:port:username:password
+        if len(parts) == 4:
+            host, port, username, password = parts
+            if not port.isdigit():
+                return None
+            return f"http://{username}:{password}@{host}:{port}"
+        else:
+            return None
+            
+    except Exception as e:
+        return None
+
+def check_proxy_live(proxy_str):
+    """Kiểm tra proxy có hoạt động không"""
+    try:
+        test_url = "http://httpbin.org/ip"
+        proxies = {'http': proxy_str, 'https': proxy_str}
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        
+        response = requests.get(test_url, proxies=proxies, headers=headers, timeout=15, verify=False)
+        return response.status_code == 200
+    except:
+        return False
+
+def get_proxy_for_account():
+    """Lấy proxy cho account"""
+    if not proxy_reg or not USE_PROXY:
+        return None
+        
+    proxy_str = proxy_reg[0]  # Lấy proxy đầu tiên
+    parsed_proxy = parse_proxy(proxy_str)
+    
+    if not parsed_proxy:
+        return None
+    
+    # Kiểm tra proxy
+    if check_proxy_live(parsed_proxy):
+        return parsed_proxy
+    else:
+        # Thử parse và test các proxy khác
+        for p in proxy_reg[1:]:
+            parsed = parse_proxy(p)
+            if parsed and check_proxy_live(parsed):
+                return parsed
+    
+    return None
+
 def get_random_user_agent():
     return random.choice(user_agent_reg)
 
@@ -209,6 +504,7 @@ def ten_gha():
     last = ["Khánh", "Anh", "Phương", "Huy", "Duy", "Long", "Khang", "Thịnh", "Nhật", "Linh",
             "My", "Ngân", "Thy", "Trang", "Nhi", "Vy", "Uyên", "Lam", "Tú", "Hằng"]
     
+    # Tạo tên theo định dạng họ + tên đệm + tên
     return f"{random.choice(first)} {random.choice(mid)} {random.choice(last)}"
 
 def birth():
@@ -217,13 +513,35 @@ def birth():
     day = random.randint(1, 28)
     return f"{day:02d}/{month:02d}/{year}"
 
+# CÁC HÀM CŨ GIỮ NGUYÊN NHƯNG KHÔNG DÙNG NỮA
+def matkhau(length=15):
+    chars = string.ascii_letters + string.digits + "!@#"
+    return ''.join(random.choice(chars) for _ in range(length))
+
+def ten_mail():
+    chars = string.ascii_lowercase + string.digits
+    return ''.join(random.choice(chars) for _ in range(8))
+
+def mail_ao():
+    domains = [
+        "gmail.com",
+        "outlook.com",
+        "hotmail.com",
+        "outlook.com.vn",
+    ]
+    domain = random.choice(domains)
+    return f"{ten_mail()}@{domain}"
+
 def create_session_with_retry():
-    """Tạo session cho Railway (không dùng proxy)"""
+    """Tạo session với proxy"""
     try:
         session = requests.Session()
         
-        # Railway không cần proxy
-        print(f"{get_time_tag()} 🌐 Railway mode - Không dùng proxy")
+        # Lấy proxy
+        proxy_str = get_proxy_for_account()
+        if proxy_str:
+            session.proxies = {'http': proxy_str, 'https': proxy_str}
+            print(f"{get_time_tag()} 🌐 Đang dùng proxy")
         
         # Tắt warnings SSL
         import warnings
@@ -253,73 +571,77 @@ def create_session_with_retry():
         print(f"{get_time_tag()} 🌐 Khởi tạo session...")
         try:
             response = session.get("https://www.facebook.com/", timeout=20, allow_redirects=True)
-            print(f"{get_time_tag()} ✅ Session OK - Status: {response.status_code}")
-            return session
+            if response.status_code in [200, 302]:
+                print(f"{get_time_tag()} ✅ Session OK")
+            else:
+                print(f"{get_time_tag()} ⚠️ Session status: {response.status_code}")
         except Exception as e:
-            print(f"{get_time_tag()} ⚠️ Session init error: {str(e)[:50]}")
-            return session
+            print(f"{get_time_tag()} ⚠️ Session init: {str(e)[:50]}")
+        
+        return session
         
     except Exception as e:
         print(f"{get_time_tag()} ❌ Lỗi tạo session: {e}")
         return None
 
-# ================= SIMPLE MOBILE REGISTRATION =================
+# ================= MOBILE FACEBOOK REGISTRATION (FIX CHO RAILWAY) =================
 def mobile_facebook_registration(session, fullname, email, password, birthday):
-    """Đăng ký Facebook qua mobile site - Đơn giản nhất"""
+    """Đăng ký Facebook qua mobile site - Ổn định hơn cho Railway"""
     try:
         print(f"{get_time_tag()} [1/3] Đang lấy trang đăng ký mobile...")
         
-        # Dùng mbasic.facebook.com (ổn định nhất)
+        # Dùng mbasic.facebook.com (ổn định hơn)
         mobile_url = "https://mbasic.facebook.com/reg/"
         
-        # Headers mobile đơn giản
-        session.headers.update({
+        # Thêm headers mobile
+        mobile_headers = {
             'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        })
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Cache-Control': 'max-age=0',
+        }
+        session.headers.update(mobile_headers)
         
-        response = session.get(mobile_url, timeout=30, allow_redirects=True)
+        response = session.get(mobile_url, timeout=20, allow_redirects=True)
+        
+        if RAILWAY_MODE:
+            debug_save_html("debug_mobile_page.html", response.text)
         
         if response.status_code != 200:
-            print(f"{get_time_tag()} ❌ Mobile page status: {response.status_code}")
             return False, f"Mobile page status: {response.status_code}"
-        
-        # Lưu HTML để debug
-        debug_save_html("mobile_form.html", response.text)
         
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Tìm tất cả form
-        forms = soup.find_all('form')
-        print(f"{get_time_tag()} [DEBUG] Tìm thấy {len(forms)} forms")
-        
+        # Tìm form đăng ký trên mobile
         form = None
-        # Tìm form có chứa các field đăng ký
+        forms = soup.find_all('form')
+        
         for f in forms:
-            form_text = str(f).lower()
-            # Kiểm tra các từ khóa đăng ký
-            if any(keyword in form_text for keyword in ['firstname', 'lastname', 'reg_email', 'reg_passwd']):
+            action = f.get('action', '')
+            if any(keyword in action.lower() for keyword in ['reg', 'signup', 'create']):
                 form = f
-                print(f"{get_time_tag()} [✅] Tìm thấy form đăng ký")
                 break
         
         if not form and forms:
             form = forms[0]  # Lấy form đầu tiên
-            print(f"{get_time_tag()} [⚠️] Lấy form đầu tiên")
         
         if not form:
-            print(f"{get_time_tag()} [❌] Không tìm thấy form nào")
             return False, "Không tìm thấy form đăng ký trên mobile"
+        
+        print(f"{get_time_tag()}     [✅] Tìm thấy form mobile")
         
         # Thu thập các field
         form_data = {}
+        
         for inp in form.find_all('input'):
             name = inp.get('name')
             value = inp.get('value', '')
+            
             if name:
                 form_data[name] = value
-        
-        print(f"{get_time_tag()} [DEBUG] Found {len(form_data)} form fields")
         
         # Thêm thông tin đăng ký
         parts = fullname.split()
@@ -327,48 +649,19 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
         lastname = " ".join(parts[1:]) if len(parts) > 1 else firstname
         day, month, year = birthday.split("/")
         
-        # Cập nhật form data với các field cơ bản
-        base_fields = {
+        
+        # Cập nhật form data
+        form_data.update({
             'firstname': firstname,
             'lastname': lastname,
+            'reg_email__': email,
+            'reg_email_confirmation__': email,
+            'reg_passwd__': password,
             'birthday_day': day,
             'birthday_month': month,
             'birthday_year': year,
             'sex': str(random.choice([1, 2])),  # 1=Nữ, 2=Nam
-        }
-        
-        # Thêm các field cơ bản
-        form_data.update(base_fields)
-        
-        # Tìm và cập nhật email và password fields
-        email_field = None
-        pass_field = None
-        
-        for field in form_data.keys():
-            field_lower = field.lower()
-            if 'email' in field_lower:
-                email_field = field
-            elif 'pass' in field_lower:
-                pass_field = field
-        
-        # Thêm email
-        if email_field:
-            form_data[email_field] = email
-            # Tìm field xác nhận email
-            confirm_field = email_field.replace('__', '_confirmation__')
-            if confirm_field in form_data:
-                form_data[confirm_field] = email
-        else:
-            # Thử các field mặc định
-            form_data['reg_email__'] = email
-            form_data['reg_email_confirmation__'] = email
-        
-        # Thêm password
-        if pass_field:
-            form_data[pass_field] = password
-        else:
-            form_data['reg_passwd__'] = password
-        
+        })
         # Xử lý action URL
         action = form.get('action', '')
         if action.startswith('/'):
@@ -376,71 +669,262 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
         elif action.startswith('http'):
             submit_url = action
         else:
-            submit_url = mobile_url
+            submit_url = f"https://mbasic.facebook.com{action}"
         
-        print(f"{get_time_tag()} [2/3] Đang submit form...")
-        time.sleep(2)
+        print(f"{get_time_tag()} [2/3] Đang submit form mobile...")
+        time.sleep(random.uniform(2, 3))
         
-        # Gửi request đăng ký
+        # Gửi request
         submit_response = session.post(
             submit_url,
             data=form_data,
             timeout=30,
             allow_redirects=True,
             headers={
-                'Referer': mobile_url,
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Referer': response.url,
+                'Origin': 'https://mbasic.facebook.com',
+                'Content-Type': 'application/x-www-form-urlencoded'
             }
         )
         
-        print(f"{get_time_tag()} [3/3] Kiểm tra kết quả...")
+        print(f"{get_time_tag()} [3/3] Kiểm tra kết quả mobile...")
         
-        # Kiểm tra cookies
+        if RAILWAY_MODE:
+            debug_save_html("debug_mobile_response.html", submit_response.text)
+        
+        # Kiểm tra kết quả
         if 'c_user' in session.cookies:
             uid = session.cookies.get('c_user')
-            print(f"{get_time_tag()} [🎉] Tìm thấy c_user: {uid}")
-            return True, f"Thành công - UID: {uid}"
+            return True, f"Thành công (Mobile - UID: {uid})"
         
-        # Kiểm tra URL và nội dung
+        # Kiểm tra các dấu hiệu thành công
         final_url = submit_response.url.lower()
         content = submit_response.text.lower()
         
-        # Kiểm tra thành công
-        success_indicators = ['home', 'welcome', 'feed', 'confirm', 'checkpoint', 'verification']
-        for indicator in success_indicators:
-            if indicator in final_url or indicator in content:
-                print(f"{get_time_tag()} [✅] Found indicator: {indicator}")
-                return True, f"Thành công - {indicator}"
-        
-        # Kiểm tra lỗi
-        error_indicators = ['sorry', 'error', 'invalid', 'incorrect', 'temporarily']
-        for indicator in error_indicators:
-            if indicator in content:
-                print(f"{get_time_tag()} [❌] Found error: {indicator}")
-                return False, f"Lỗi: {indicator}"
-        
-        # Kiểm tra lại cookies sau 3 giây
-        time.sleep(3)
-        if 'c_user' in session.cookies:
-            uid = session.cookies.get('c_user')
-            return True, f"Thành công (delayed) - UID: {uid}"
-        
-        return False, "Không xác định kết quả"
+        if 'checkpoint' in final_url:
+            return False, "Checkpoint (Mobile)"
+        elif 'confirm' in final_url or 'confirm' in content:
+            return True, "Cần xác nhận email (Mobile)"
+        elif any(keyword in final_url for keyword in ['home', 'mbasic', 'welcome']):
+            return True, "Thành công (Mobile)"
+        elif 'sorry' in content or 'temporarily blocked' in content:
+            return False, "Facebook chặn tạm thời (Mobile)"
+        else:
+            # Kiểm tra thông báo lỗi
+            error_patterns = [
+                r'id="reg_error"[^>]*>([^<]+)',
+                r'class="[^"]*error[^"]*"[^>]*>([^<]+)',
+                r'>([^<]+error[^<]+)<'
+            ]
+            
+            for pattern in error_patterns:
+                match = re.search(pattern, submit_response.text, re.IGNORECASE)
+                if match:
+                    error_msg = match.group(1).strip()[:100]
+                    return False, f"Lỗi mobile: {error_msg}"
+            
+            return False, "Không xác định (Mobile)"
             
     except Exception as e:
-        print(f"{get_time_tag()} ❌ Lỗi mobile: {str(e)[:200]}")
-        import traceback
-        traceback.print_exc()
-        return False, f"Lỗi hệ thống: {str(e)[:100]}"
+        return False, f"Lỗi mobile: {str(e)[:100]}"
+
+# ================= WEB FACEBOOK REGISTRATION =================
+def simple_facebook_registration(session, fullname, email, password, birthday):
+    """Đăng ký Facebook web - Phiên bản fix cho Railway"""
+    try:
+        print(f"{get_time_tag()} [1/3] Đang lấy trang đăng ký web...")
+        
+        # Thêm headers đầy đủ
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Cache-Control': 'max-age=0',
+            'DNT': '1',
+            'TE': 'trailers'
+        }
+        session.headers.update(headers)
+        
+        # Dùng URL đăng ký
+        reg_urls = [
+            "https://www.facebook.com/reg/",
+            "https://www.facebook.com/r.php"
+        ]
+        
+        response = None
+        for url in reg_urls:
+            try:
+                print(f"{get_time_tag()}     Thử: {url}")
+                response = session.get(url, timeout=20, allow_redirects=True)
+                
+                if RAILWAY_MODE:
+                    debug_save_html("debug_web_page.html", response.text[:3000])
+                
+                if response.status_code == 200:
+                    content_lower = response.text.lower()
+                    if any(keyword in content_lower for keyword in ['sign up', 'reg_email', 'firstname']):
+                        print(f"{get_time_tag()}     [✅] Tìm thấy trang đăng ký web")
+                        break
+                print(f"{get_time_tag()}     [⚠️] Status {response.status_code}")
+                
+            except Exception as e:
+                print(f"{get_time_tag()}     [❌] Lỗi: {str(e)[:50]}")
+                continue
+        
+        if not response or response.status_code != 200:
+            # Fallback: Thử mobile
+            print(f"{get_time_tag()}     [🔄] Fallback sang mobile")
+            return mobile_facebook_registration(session, fullname, email, password, birthday)
+        
+        # Parse HTML
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Tìm form
+        form = None
+        forms = soup.find_all('form')
+        
+        # Cách 1: Tìm form có field reg_email__
+        for f in forms:
+            if f.find('input', {'name': 'reg_email__'}):
+                form = f
+                break
+        
+        # Cách 2: Tìm form có action chứa /reg/
+        if not form:
+            for f in forms:
+                action = f.get('action', '')
+                if '/reg' in action or '/r.php' in action:
+                    form = f
+                    break
+        
+        # Cách 3: Lấy form đầu tiên
+        if not form and forms:
+            form = forms[0]
+        
+        if not form:
+            print(f"{get_time_tag()}     [🔄] Không tìm thấy form web, chuyển sang mobile")
+            return mobile_facebook_registration(session, fullname, email, password, birthday)
+        
+        print(f"{get_time_tag()}     [✅] Đã tìm thấy form web")
+        
+        # Thu thập field
+        form_data = {}
+        
+        for inp in form.find_all('input'):
+            name = inp.get('name')
+            value = inp.get('value', '')
+            
+            if name:
+                form_data[name] = value
+        
+        # Thêm thông tin
+        parts = fullname.split()
+        time.sleep(1.2)
+        firstname = parts[0]
+        lastname = " ".join(parts[1:]) if len(parts) > 1 else firstname
+        day, month, year = birthday.split("/")
+        
+        form_data.update({
+            'firstname': firstname,
+            'lastname': lastname,
+            'reg_email__': email,
+            'reg_email_confirmation__': email,
+            'reg_passwd__': password,
+            'birthday_day': day,
+            'birthday_month': month,
+            'birthday_year': year,
+            'sex': str(random.choice([1, 2])),
+        })
+        
+        # Xử lý action URL
+        action = form.get('action', '')
+        base_url = response.url
+        
+        if action.startswith('http'):
+            submit_url = action
+        elif action.startswith('/'):
+            domain = 'https://www.facebook.com'
+            submit_url = domain + action
+        else:
+            submit_url = base_url
+        
+        print(f"{get_time_tag()} [2/3] Đang submit form web...")
+        time.sleep(random.uniform(2, 4))
+        
+        # Gửi request
+        submit_response = session.post(
+            submit_url,
+            data=form_data,
+            timeout=30,
+            allow_redirects=True,
+            headers={
+                'Referer': response.url,
+                'Origin': 'https://www.facebook.com',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        )
+        
+        print(f"{get_time_tag()} [3/3] Kiểm tra kết quả web...")
+        
+        # Kiểm tra cookie
+        if 'c_user' in session.cookies:
+            uid = session.cookies.get('c_user')
+            return True, f"Thành công (Web - UID: {uid})"
+        
+        # Kiểm tra kết quả
+        final_url = submit_response.url.lower()
+        
+        if 'checkpoint' in final_url:
+            return False, "Checkpoint (Web)"
+        elif 'confirm' in final_url:
+            return True, "Cần xác nhận email (Web)"
+        elif 'home' in final_url or 'facebook.com/?sk=welcome' in final_url:
+            return True, "Thành công (Web)"
+        else:
+            return False, "Không xác định (Web)"
+            
+    except Exception as e:
+        print(f"{get_time_tag()} ❌ Web error: {str(e)[:100]}")
+        # Fallback sang mobile
+        return mobile_facebook_registration(session, fullname, email, password, birthday)
 
 def check_live_status(session):
     """Kiểm tra account có live không"""
     try:
-        # Kiểm tra cookie c_user
-        if 'c_user' in session.cookies:
-            uid = session.cookies.get('c_user')
-            if uid and len(uid) > 5:
-                return True, "LIVE", f"https://www.facebook.com/profile.php?id={uid}", uid
+        cookies_dict = {}
+        for cookie in session.cookies:
+            cookies_dict[cookie.name] = cookie.value
+        
+        # Kiểm tra với nhiều URL
+        check_urls = [
+            "https://www.facebook.com/me",
+            "https://m.facebook.com/me",
+            "https://mbasic.facebook.com/me"
+        ]
+        
+        for url in check_urls:
+            try:
+                response = session.get(url, timeout=10, allow_redirects=True)
+                if 'checkpoint' in response.url.lower():
+                    return False, "Checkpoint", None, None
+                
+                if 'c_user' in cookies_dict:
+                    uid = cookies_dict['c_user']
+                    if uid and len(uid) > 5:
+                        return True, "LIVE", f"https://www.facebook.com/profile.php?id={uid}", uid
+            except:
+                continue
+        
+        if 'c_user' in cookies_dict:
+            uid = cookies_dict['c_user']
+            return True, "LIVE (cookie only)", f"https://www.facebook.com/profile.php?id={uid}", uid
         
         return False, "DIE", None, None
         
@@ -472,13 +956,13 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
     session = None
     try:
         tg_edit(chat_id, msg_id, f"{get_time_tag()} ⏳ Đang chuẩn bị thông tin...")
-        time.sleep(1)
+        time.sleep(random.uniform(1.0, 2.0))
         
-        # Tạo thông tin account
+        # Tạo thông tin account theo định dạng mới
         fullname = ten_gha()
         birthday = birth()
         
-        # Sử dụng hàm mới để tạo email và password
+        # Sử dụng hàm mới để tạo email và password theo định dạng yêu cầu
         account_info = generate_account_from_name(fullname)
         email = account_info["email"]
         password = account_info["password"]
@@ -495,23 +979,28 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
             RUNNING_CHAT.remove(chat_id)
             return
         
-        # Ưu tiên mobile trên Railway
-        tg_edit(chat_id, msg_id, f"{get_time_tag()} 📱 Đang đăng ký qua mobile...")
-        success, message = mobile_facebook_registration(session, fullname, email, password, birthday)
+        # THÊM: Ưu tiên mobile trên Railway
+        if RAILWAY_MODE:
+            tg_edit(chat_id, msg_id, f"{get_time_tag()} 📱 Railway: Ưu tiên mobile registration...")
+            success, message = mobile_facebook_registration(session, fullname, email, password, birthday)
+        else:
+            tg_edit(chat_id, msg_id, f"{get_time_tag()} 🖥 Đang đăng ký web...")
+            success, message = simple_facebook_registration(session, fullname, email, password, birthday)
         
         if not success:
             tg_edit(chat_id, msg_id, f"{get_time_tag()} ❌ Đăng ký thất bại: {message}")
             
-            # Thử lại lần 2
-            time.sleep(3)
-            tg_edit(chat_id, msg_id, f"{get_time_tag()} 🔄 Thử lại lần 2...")
-            session = create_session_with_retry()
-            if session:
-                success, message = mobile_facebook_registration(session, fullname, email, password, birthday)
+            # Thử cách khác nếu thất bại
+            if RAILWAY_MODE and "mobile" not in message.lower():
+                tg_edit(chat_id, msg_id, f"{get_time_tag()} 🔄 Thử cách khác...")
+                time.sleep(2)
+                success, message = simple_facebook_registration(session, fullname, email, password, birthday)
             
             if not success:
-                # Kiểm tra xem có live không
+                # Vẫn check thử
+                time.sleep(3)
                 is_live, live_msg, profile_url, uid = check_live_status(session)
+                
                 if is_live:
                     tg_edit(chat_id, msg_id, f"{get_time_tag()} ⚠️ Lỗi reg nhưng acc vẫn LIVE!")
                 else:
@@ -520,11 +1009,13 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
                     RUNNING_CHAT.remove(chat_id)
                     return
         else:
-            # Xử lý kết quả thành công
-            time.sleep(3)
+            # Xử lý kết quả
+            time.sleep(5)
             is_live, live_msg, profile_url, uid = check_live_status(session)
             
-            if not is_live:
+            if is_live:
+                tg_edit(chat_id, msg_id, f"{get_time_tag()} 🎉 ACC LIVE")
+            else:
                 tg_edit(chat_id, msg_id, f"{get_time_tag()} 💀 ACC DIE")
                 if session:
                     session.close()
@@ -554,9 +1045,10 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
         # Hiển thị kết quả
         tg_edit(chat_id, msg_id, format_result(result, is_live))
         
-        # Lưu account
+        # Lưu account nếu có UID thực
         if uid and uid != '0':
             save_account_to_file(fullname, email, password, profile_url, cookies_dict)
+            tg_send(chat_id, f"✅ <b><i>{uid}</i></b>", reply_to_message_id=message_id)
 
     except Exception as e:
         error_result = {
@@ -565,15 +1057,12 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
         }
         tg_edit(chat_id, msg_id, format_result(error_result, False))
         print(f"{get_time_tag()} ❌ System error: {e}")
-        import traceback
-        traceback.print_exc()
 
         if session:
             try:
                 session.close()
             except:
                 pass
-        RUNNING_CHAT.remove(chat_id)
 
 def save_account_to_file(fullname, email, password, profile_url, cookies_dict):
     """Lưu account vào file"""
@@ -599,7 +1088,6 @@ def save_account_to_file(fullname, email, password, profile_url, cookies_dict):
         
         with open(file_path, "a", encoding="utf-8") as f:
             f.write(data)
-        print(f"{get_time_tag()} ✅ Đã lưu account {uid}")
             
     except Exception as e:
         print(f"{get_time_tag()} ❌ Lỗi lưu file: {e}")
@@ -625,23 +1113,29 @@ def format_result(d, success):
         if k not in d or d[k] is None:
             d[k] = "None"
 
+    footer = html_escape(
+        """
+        𐔌. FB    : /tg.nux — Trung Hiếu
+   """
+    )
+    
     return (
         f"<b>{status_color} REG {'THÀNH CÔNG' if is_live else 'THẤT BẠI'} {'🎊' if is_live else '❌'}</b>\n"
-        f"<code><i>Thông tin acc bên dưới:</i></code>      ᓚ₍⑅^..^₎ฅ\n"
-        f"╭────-_Ი𐑼_-─────────⭓\n"
+        "<code><i>Thông tin acc bên dưới:</i></code>      ᓚ₍⑅^..^₎ฅ\n"
+        "╭────-_Ი𐑼_-─────────⭓\n"
         f"│ 👤 Tên: ⤷ ゛<code>{html_escape(d['name'])}</code>  ˎˊ˗\n"
         f"│ 📧 Email: <code>{html_escape(d['email'])}</code>\n"
-        f"│ 🔑 Mật khẩu: <tg-spoiler>{html_escape(d['password'])}</tg-spoiler>\n"
+        f"│ 🔑 Mật khẩu: <tg-spoiler><code>{(d['password'])}</code></tg-spoiler>\n"
         f"│ 📌 Trạng thái: <b>🟢Live!</b>      ୨ৎ⊹ˑ ֗\n"
         f"│ 🆔 UID: <code>{html_escape(d['uid'])}</code>\n"
-        f"│ 🔗 Profile: https://www.facebook.com/profile.php?id={html_escape(d['uid'])}\n"
+        f"│ 🔗 Profile: {'https://www.facebook.com/profile.php?id=' + html_escape(d['uid']) if d['uid'] != '0' else 'Không có'}\n"
         f"│ 🍪 Cookies: <code>{html_escape(d['cookies'])}</code>\n"
         f"├───────.────\n"
         f"│ ⏰ Thời gian: <b>{now}</b>        ◟ ͜ ׁ ˙\n"
         "╰───｡𖦹°‧──────˙⟡────⭓\n"
         f"<b><i>Chúc bạn một buổi tốt lành!</i></b>\n"
         f"<b><i>Người sử dụng bot: {user_name}</i></b>  /ᐠ - ˕-マ⌒\n" 
-        f"<b><i>Bot phục vụ bạn: @nuxw_bot</i></b>    ᶻ 𝗓 𐰁 .ᐟ\n\n"
+        f"<b><i>Bot phục vụ bạn: @nuxw_bot</i></b>   ᶻ 𝗓 𐰁 .ᐟ\n\n"
     )
 
 # ================= BOT HANDLERS =================
@@ -657,30 +1151,120 @@ def handle_help(chat_id, message_id):
     """Xử lý lệnh /help"""
     text = (
         "<b><i> 🧸 ┊‌ NUX BOT XIN CHÀO! ┊‌ 🍰\n"
-        "                 ˚༺☆༻</i></b>\n"
-        "\n"
-        "␥ 🫧 TỚ XIN HỖ TRỢ BẠN BẰNG CÁC LỆNH NHƯ SAU:\n"
-        "\n"
-        "━━━━━━━━━━━━━━━━\n"
-        "␥ 「 🚀 LỆNH REG: 」\n"
-        "𖥻𓂃  <b>/regfb</b> — Tạo một tài khoản Facebook (no verify)\n"
-        " ₎₎ ๑\n"
-        "━━━━━━━━━━━━━━━━\n"
-        "␥ 「 🔎 LỆNH CHECK INFO: 」\n"
-        "𖥻𓂃  <b>/checkif &lt;UID | Link&gt;</b> — Check info Facebook\n"
-        " ₎₎ ๑\n"
-        "━━━━━━━━━━━━━━━━\n"
-        "␥ 「 👤 LỆNH XEM THÔNG TIN TELEGRAM: 」\n"
-        "𖥻𓂃  <b>/myinfo</b> — Xem thông tin của bạn\n"
-        " ₎₎ ๑\n"
-        "━━━━━━━━━━━━━━━━\n"
-        "␥ 「 ✨ LỆNH KÍ TỰ AESTHETIC: 」\n"
-        "𖥻𓂃  <b>/symbols</b> — Lấy 150 kí tự symbols aesthetic\n"
-        " ₎₎ ๑\n"
-        "━━━━━━━━━━━━━━━━\n"
-        "␥ 「 ⏱ LƯU Ý: 」 Một số lệnh sẽ tự xoá sau 60 giây\n"
+"                 ˚༺☆༻</i></b>\n"
+"\n"
+"␥ 🫧 TỚ XIN HỖ TRỢ BẠN BẰNG CÁC LỆNH NHƯ SAU:\n"
+"\n"
+"━━━━━━━━━━━━━━━━\n"
+"␥ 「 🚀 LỆNH REG: 」\n"
+"𖥻𓂃  <b>/regfb</b> — Tạo một tài khoản Facebook (no verify)\n"
+" ₎₎ ๑\n"
+"━━━━━━━━━━━━━━━━\n"
+"␥ 「 🔎 LỆNH CHECK INFO: 」\n"
+"𖥻𓂃  <b>/checkif &lt;UID | Link&gt;</b> — Check info Facebook\n"
+" ₎₎ ๑\n"
+"━━━━━━━━━━━━━━━━\n"
+"␥ 「 👤 LỆNH XEM THÔNG TIN TELEGRAM: 」\n"
+"𖥻𓂃  <b>/myinfo</b> — Xem thông tin của bạn\n"
+" ₎₎ ๑\n"
+"━━━━━━━━━━━━━━━━\n"
+"␥ 「 ✨ LỆNH KÍ TỰ AESTHETIC: 」\n"
+"𖥻𓂃  <b>/symbols</b> — Lấy 150 kí tự symbols aesthetic\n"
+" ₎₎ ๑\n"
+"━━━━━━━━━━━━━━━━\n"
+"␥ 「 ⏱ LƯU Ý: 」 Một số lệnh sẽ tự xoá sau 60 giây\n"
     )
     tg_send(chat_id, text, reply_to_message_id=message_id)
+
+def format_myinfo(chat_id, user_info):
+    """Format thông tin user"""
+    uid = user_info.get("id")
+    full_name = f"{user_info.get('first_name', '')} {user_info.get('last_name', '')}".strip()
+    username = user_info.get("username")
+    
+    info_text = (
+        "<b>✅ DƯỚI ĐÂY LÀ THÔNG TIN CỦA BẠN:</b>\n"
+        f"<b><i>🆔 UID:</i></b> <code>{uid}</code>\n"
+        f"<b><i>🏷️ Tên:</i></b> <code>{html_escape(full_name)}</code>\n"
+    )
+    
+    if username:
+        info_text += f"<b><i>💳 User: @{html_escape(username)}</i></b>\n"
+    else:
+        info_text += "<b><i>💳 User:</i></b> <code>Không có</code>\n"
+        
+    info_text += "\n<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>"
+    return info_text
+
+def handle_myinfo(chat_id, user_info, message_id):
+    """Xử lý lệnh /myinfo"""
+    text = format_myinfo(chat_id, user_info)
+    sent_msg_id = tg_send(chat_id, text, reply_to_message_id=message_id)
+    
+    if sent_msg_id:
+        threading.Thread(target=self_destruct_message, args=(chat_id, sent_msg_id, message_id, 60), daemon=True).start()
+
+def handle_symbols(chat_id, message_id):
+    """Xử lý lệnh /symbols"""
+    processing_msg = tg_send(chat_id, "⏱️ Đang lấy...", reply_to_message_id=message_id)
+    if not processing_msg:
+        return
+        
+    try:
+        symbols_line = "✦ ✧ ★ ☆ ✯ ✰ ⭐ ✨ ⚝ ♕ ♔ ☾ ☽ ☼ ☀ ☁ ⛄ ☔ ♪ ♫ ♬ ♩ ✿ ❀ ❁ ❃ ❄ ❅ ❆ ❇ ❈ ❉ ✢ ✣ ✤ ✥ ❊ ✱ ✲ ✳ ✴ ✵ ✶ ✷ ✸ ✹ ✺ ❋ † ‡ ※ ⁂ ⁑ ☸ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ☮ ☯ ♨ ❖ ✪ ౿ ๏ ★ ☆"
+        
+        result_text = (
+            "✅ <b>SYMBOLS AESTHETIC:</b>\n"
+            f"<code>{html_escape(symbols_line)}</code>\n\n"
+            "<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>"
+        )
+
+        tg_edit(chat_id, processing_msg, result_text)
+        
+        threading.Thread(target=self_destruct_message, args=(chat_id, processing_msg, message_id, 60), daemon=True).start()
+
+    except Exception as e:
+        error_text = f"❌ Lỗi: {str(e)[:100]}"
+        tg_edit(chat_id, processing_msg, error_text)
+        print(f"{get_time_tag()} [ERROR] {e}")
+
+def handle_checkif(chat_id, user_input, message_id, user_name):
+    """Xử lý lệnh /checkif"""
+    processing_msg = tg_send(
+        chat_id,
+        "⏳ Đang xử lý...",
+        reply_to_message_id=message_id
+    )
+    if not processing_msg:
+        return
+
+    try:
+        uid = extract_uid_from_input(user_input)
+        if not uid:
+            tg_edit(chat_id, processing_msg, "❌ Không lấy được UID từ input.")
+            return
+
+        api_result = get_fb_info(uid)
+
+        if "error" in api_result:
+            tg_edit(chat_id, processing_msg, f"❌ {html_escape(api_result['error'])}")
+            return
+
+        caption = create_caption(api_result["data"])
+        tg_edit(chat_id, processing_msg, caption)
+
+        threading.Thread(
+            target=self_destruct_message,
+            args=(chat_id, processing_msg, message_id, 60),
+            daemon=True
+        ).start()
+
+    except Exception as e:
+        tg_edit(
+            chat_id,
+            processing_msg,
+            f"❌ Lỗi hệ thống: {html_escape(str(e)[:100])}"
+        )
 
 # ================= BOT MAIN LOOP =================
 def get_bot_username():
@@ -698,32 +1282,33 @@ BOT_USERNAME = get_bot_username()
 print("\n" + "="*50)
 print("🤖 NOVERY TELEGRAM BOT - BY TGHIEUX")
 print(f"Bot: {BOT_USERNAME}")
+print(f"Group ID: {MANDATORY_GROUP_ID}")
 print(f"Railway Mode: {RAILWAY_MODE}")
 print(f"Use Proxy: {USE_PROXY}")
 print("="*50 + "\n")
 
-# Main loop
 while True:
-    try:
-        for u in get_updates():
-            msg = u.get("message")
-            if not msg or "text" not in msg or "from" not in msg:
-                continue
+    for u in get_updates():
+        msg = u.get("message")
+        if not msg or "text" not in msg or "from" not in msg:
+            continue
 
-            chat_id = msg["chat"]["id"]
-            user_info = msg["from"]
-            user_id = user_info.get("id")
-            text = msg["text"].strip()
-            message_id = msg.get("message_id")
+        chat_id = msg["chat"]["id"]
+        user_info = msg["from"]
+        user_id = user_info.get("id")
+        text = msg["text"].strip()
+        message_id = msg.get("message_id")
 
-            username_str = user_info.get("username")
-            first_name_str = user_info.get("first_name", "Unknown")
-            user_name = "@" + username_str if username_str else first_name_str
+        username_str = user_info.get("username")
+        first_name_str = user_info.get("first_name", "Unknown")
+        user_name = "@" + username_str if username_str else first_name_str
 
-            print(f"{get_time_tag()} | USER: {user_name} | ID: {user_id} | CMD: {text}")
+        print(f"{get_time_tag()} | USER: {user_name} | ID: {user_id} | CMD: {text}")
 
-            # Kiểm tra nhóm bắt buộc
-            if text.startswith("/regfb") and not check_group_membership(user_id):
+        cmd = text.split()[0]
+        
+        if cmd not in ["/start", f"/start{BOT_USERNAME}", "/help", f"/help{BOT_USERNAME}"]:
+            if not check_group_membership(user_id):
                 require_join_msg = (
                     "<b>⚠️ YÊU CẦU THAM GIA GROUP!!!</b>\n"
                     "\n"
@@ -733,29 +1318,51 @@ while True:
                     "\n"
                     "␥ Sau khi tham gia, quay lại và sử dụng bot\n"
                 )
-                tg_send(chat_id, require_join_msg, reply_to_message_id=message_id)
+                
+                sent_msg_id = tg_send(chat_id, require_join_msg, reply_to_message_id=message_id)
+                
+                if sent_msg_id:
+                     threading.Thread(target=self_destruct_message, args=(chat_id, sent_msg_id, message_id, 60), daemon=True).start()
+                         
+                continue
+        
+        if text.startswith("/"):
+               if block_group_if_needed(chat_id, text, message_id):
                 continue
 
-            # Xử lý commands
-            if text.startswith("/regfb"):
-                if chat_id in RUNNING_CHAT:
-                    tg_send(chat_id, "⏳ Đang xử lý reg trước đó, vui lòng chờ...", reply_to_message_id=message_id)
-                else:
-                    threading.Thread(
-                        target=reg_single_account,
-                        args=(chat_id, user_id, user_name, message_id),
-                        daemon=True
-                    ).start()
-            
-            elif text.startswith("/start"):
-                handle_start(chat_id, user_name, message_id)
-            
-            elif text.startswith("/help"):
-                handle_help(chat_id, message_id)
+        if cmd == "/regfb" or cmd == f"/regfb{BOT_USERNAME}":
+            threading.Thread(
+                target=reg_single_account,
+                args=(chat_id, user_id, user_name, message_id),
+                daemon=True
+            ).start()
+        
+        elif cmd == "/checkif" or cmd == f"/checkif{BOT_USERNAME}":
+            args = text.split(maxsplit=1)
+            if len(args) < 2:
+                error_msg = "❌ Dùng: <code>/checkif &lt;uid-hoặc-link&gt;</code>\nVí dụ:\n• <code>/checkif 100000000000001</code>\n• <code>/checkif https://facebook.com/zuck</code>\n\n<b><i>⚠️ Tin nhắn sẽ tự xoá sau 1 phút!</i></b>"
+                sent_msg_id = tg_send(chat_id, error_msg, reply_to_message_id=message_id)
+                if sent_msg_id:
+                    threading.Thread(target=self_destruct_message, args=(chat_id, sent_msg_id, message_id, 60), daemon=True).start()
+            else:
+                user_input = args[1].strip()
+                threading.Thread(
+                    target=handle_checkif,
+                    args=(chat_id, user_input, message_id, user_name),
+                    daemon=True
+                ).start()
 
-    except Exception as e:
-        print(f"{get_time_tag()} ❌ Lỗi main loop: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    time.sleep(1)
+        elif cmd == "/start" or cmd == f"/start{BOT_USERNAME}":
+            handle_start(chat_id, user_name, message_id)
+        elif text == "/myinfo" or cmd == f"/myinfo{BOT_USERNAME}":
+            handle_myinfo(chat_id, user_info, message_id)
+        elif text == "/symbols" or cmd == f"/symbols{BOT_USERNAME}":
+            threading.Thread(
+                target=handle_symbols,
+                args=(chat_id, message_id),
+                daemon=True
+            ).start()
+        elif cmd == "/help" or cmd == f"/help{BOT_USERNAME}":
+            handle_help(chat_id, message_id)
+
+    time.sleep(1) 
