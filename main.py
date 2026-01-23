@@ -555,7 +555,7 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
         
         print(f"{get_time_tag()}     [✅] Tìm thấy form mobile")
         
-        # Thu thập các fiel
+        # Thu thập các field
         form_data = {}
         
         for inp in form.find_all('input'):
@@ -1041,11 +1041,13 @@ def format_result(d, success):
         f"│ 👤 Tên: ⤷ ゛<code>{html_escape(d['name'])}</code>  ˎˊ˗\n"
         f"│ 📧 Email: <code>{html_escape(d['email'])}</code>\n"
         f"│ 🔑 Mật khẩu: <tg-spoiler><code>{(d['password'])}</code></tg-spoiler>\n"
-        f"│ 📌 Trạng thái: <b>🟢 Live!</b>      ୨ৎ⊹ˑ ֗\n"
+        f"│ 📌 Trạng thái: <b>🟢Live!</b>      ୨ৎ⊹ˑ ֗\n"
         f"│ 🆔 UID: <code>{html_escape(d['uid'])}</code>\n"
         f"│ 🔗 Profile: {'https://www.facebook.com/profile.php?id=' + html_escape(d['uid']) if d['uid'] != '0' else 'Không có'}\n"
         f"│ 🍪 Cookies: <code>{html_escape(d['cookies'])}</code>\n"
         f"├───────.────\n"
+        f"│ 🌐 IP: <b>▒▒▒▒▒▒▒▒▒▒</b>       ᶻ 𝗓 𐰁 .ᐟ\n"
+        f"│ 🌎 Quốc gia: <b>Việt Nam (VN)</b>\n"
         f"│ ⏰ Thời gian: <b>{now}</b>        ◟ ͜ ׁ ˙\n"
         "╰───｡𖦹°‧──────˙⟡────⭓\n"
         f"<b><i>Chúc bạn một buổi tốt lành!</i></b>\n"
