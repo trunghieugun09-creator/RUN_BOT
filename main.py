@@ -30,7 +30,7 @@ MANDATORY_GROUP_TITLE = "𝗣𝗮𝗿𝗮𝗴𝗼𝗻 𝗦𝗲𝗹 ᵎ!ᵎ 𝐟�
 
 # ================= CONFIG REGISTRATION =================
 # RAILWAY CONFIG
-USE_PROXY = False if RAILWAY_MODE else False  # Railway không cần proxy
+USE_PROXY = False if RAILWAY_MODE else True  # Railway không cần proxy
 
 proxy_reg = [
     "sp06v4-01.proxymmo.me:20393:sp06v405-20393:PDQLU"
@@ -427,7 +427,7 @@ def get_random_user_agent():
 def ten_gha():
     first = ["Bạch","Uyển","Cố","Sở","Trạch","Lam","Thanh","Mặc","Kim","Thiên","Hồng","Kính","Thủy","Kiều","Minh","Nhật","Băng","Hải","Tâm","Phi"]
     mid = ["Vũ","Hạ","Tỉnh","Vân","Khúc","Ảnh","Huyết","Vô","Tuyệt","Mệnh","Ngản","Ngạn","Bi","Lưu","Tĩnh","Lộ","Phong","Tư","Khiết","Vĩ"]
-    last = ["Khách","Xuẫn","Nghi","Ninh","Nhạn","Quân","Hiên","Lâm"]
+    last = ["Khách","Xuẫn","Nghi","Ninh","Nhạn","Quân","Hiên","Lâm","歌","琴","郎","箫","楼","塔","叶","燕","府","徒","豪"]
     return f"{random.choice(first)} {random.choice(mid)} {random.choice(last)}"
 
 def birth():
@@ -506,15 +506,20 @@ def create_session_with_retry():
         print(f"{get_time_tag()} ❌ Lỗi tạo session: {e}")
         return None
 
-# ================= MOBILE FACEBOOK REGISTRATION (FIXED VERSION) =================
+# ================= MOBILE FACEBOOK REGISTRATION (UPDATED FIX) =================
 def mobile_facebook_registration(session, fullname, email, password, birthday):
-    """Đăng ký Facebook qua mobile site - Fixed version"""
+    """Đăng ký Facebook qua mobile site - Phương pháp mới tìm form"""
     try:
         print(f"{get_time_tag()} [1/3] Đang lấy trang đăng ký mobile...")
         
-        # THỬ NHIỀU URL MOBILE KHÁC NHAU
+        # URL ĐĂNG KÝ MỚI - TRỰC TIẾP TỚI TRANG TẠO TÀI KHOẢN
         mobile_urls = [
-            "https://www.facebook.com/reg/",
+            "https://mbasic.facebook.com/reg/",
+            "https://m.facebook.com/reg/",
+            "https://mbasic.facebook.com/r.php?next=https%3A%2F%2Fmbasic.facebook.com%2F",
+            "https://m.facebook.com/r.php",
+            "https://mbasic.facebook.com/reg/?cid=103",
+            "https://m.facebook.com/reg/?cid=103"
         ]
         
         response = None
@@ -523,19 +528,20 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
         for url in mobile_urls:
             try:
                 print(f"{get_time_tag()}     Thử URL: {url}")
-                
-                # Thêm delay giữa các request
                 time.sleep(random.uniform(1, 2))
                 
-                # Header mobile thực tế
+                # Header mobile mới nhất
                 mobile_headers = {
-                    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.9',
+                    'User-Agent': 'Mozilla/5.0 (Linux; Android 13; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
                     'Accept-Encoding': 'gzip, deflate',
                     'Connection': 'keep-alive',
                     'Upgrade-Insecure-Requests': '1',
-                    'Cache-Control': 'max-age=0',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-User': '?1',
                 }
                 session.headers.update(mobile_headers)
                 
@@ -543,13 +549,25 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
                 
                 if response.status_code == 200:
                     html_content = response.text
+                    print(f"{get_time_tag()}     [✅] Truy cập thành công: {len(html_content)} chars")
                     
-                    # KIỂM TRA XEM CÓ PHẢI TRANG ĐĂNG KÝ KHÔNG
-                    if any(keyword in html_content.lower() for keyword in ['sign up', 'reg_email', 'firstname', 'lastname', 'birthday']):
-                        print(f"{get_time_tag()}     [✅] Tìm thấy trang đăng ký mobile")
+                    # KIỂM TRA CÓ PHẢI TRANG ĐĂNG KÝ
+                    content_lower = html_content.lower()
+                    is_reg_page = any(keyword in content_lower for keyword in [
+                        'sign up', 'create account', 'tạo tài khoản', 
+                        'first name', 'last name', 'email', 'password',
+                        'birthday', 'giới tính', 'gender'
+                    ])
+                    
+                    if is_reg_page:
+                        print(f"{get_time_tag()}     [✅] Đây là trang đăng ký")
                         break
                     else:
-                        print(f"{get_time_tag()}     [⚠️] Trang không phải đăng ký, thử URL khác...")
+                        print(f"{get_time_tag()}     [⚠️] Không phải trang đăng ký, kiểm tra nhanh...")
+                        
+                        # Debug: Lưu HTML để phân tích
+                        debug_save_html(f"debug_mobile_{len(html_content)}.html", html_content)
+                        
                 else:
                     print(f"{get_time_tag()}     [❌] Status: {response.status_code}")
                     
@@ -558,126 +576,199 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
                 continue
         
         if not response or response.status_code != 200:
-            return False, f"Không thể truy cập trang mobile (Status: {response.status_code if response else 'No response'})"
+            return False, f"Không thể truy cập trang mobile"
         
-        if RAILWAY_MODE:
-            debug_save_html("debug_mobile_page.html", html_content[:3000])
-        
-        # PHÂN TÍCH HTML ĐỂ TÌM FORM
+        # PHÂN TÍCH HTML - PHƯƠNG PHÁP MỚI
+        print(f"{get_time_tag()}     Phân tích HTML...")
         soup = BeautifulSoup(html_content, 'html.parser')
         
-        # TÌM FORM BẰNG NHIỀU CÁCH
+        # PHƯƠNG PHÁP 1: TÌM FORM BẰNG ID HOẶC CLASS ĐẶC BIỆT
         form = None
         
-        # Cách 1: Tìm form có input reg_email__
-        forms = soup.find_all('form')
-        for f in forms:
-            # Kiểm tra nếu form có các field đăng ký
-            inputs = f.find_all('input')
-            has_reg_fields = False
-            for inp in inputs:
-                name = inp.get('name', '')
-                if any(field in name.lower() for field in ['reg_email', 'firstname', 'lastname']):
-                    has_reg_fields = True
+        # Các selector có thể có của form đăng ký mobile
+        possible_selectors = [
+            "form[action*='/reg/']",
+            "form[action*='/r.php']",
+            "form[method='post']",
+            "form",
+            "#reg_form",
+            ".registration_form",
+            "#signup_form",
+            "form#reg"
+        ]
+        
+        for selector in possible_selectors:
+            try:
+                found_form = soup.select_one(selector)
+                if found_form:
+                    form = found_form
+                    print(f"{get_time_tag()}     [✅] Tìm thấy form bằng selector: {selector}")
                     break
+            except:
+                continue
+        
+        # PHƯƠNG PHÁP 2: TÌM FORM CÓ INPUT ĐẶC BIỆT
+        if not form:
+            print(f"{get_time_tag()}     [🔍] Tìm form bằng input đặc biệt...")
             
-            if has_reg_fields:
-                form = f
-                print(f"{get_time_tag()}     [✅] Tìm thấy form bằng reg fields")
-                break
-        
-        # Cách 2: Tìm form có action chứa /reg/ hoặc /r.php
-        if not form:
-            for f in forms:
-                action = f.get('action', '').lower()
-                if any(keyword in action for keyword in ['/reg', 'r.php', 'signup']):
+            # Tìm tất cả form
+            all_forms = soup.find_all('form')
+            print(f"{get_time_tag()}     Tìm thấy {len(all_forms)} form trong trang")
+            
+            for f in all_forms:
+                # Kiểm tra form có input đăng ký không
+                inputs = f.find_all('input')
+                textareas = f.find_all('textarea')
+                selects = f.find_all('select')
+                
+                has_reg_field = False
+                field_names = []
+                
+                for inp in inputs:
+                    name = inp.get('name', '').lower()
+                    field_type = inp.get('type', '').lower()
+                    
+                    if any(keyword in name for keyword in ['first', 'last', 'email', 'pass', 'birth', 'sex', 'gender']):
+                        has_reg_field = True
+                        field_names.append(name)
+                    elif field_type in ['text', 'email', 'password']:
+                        has_reg_field = True
+                
+                if has_reg_field:
                     form = f
-                    print(f"{get_time_tag()}     [✅] Tìm thấy form bằng action")
+                    print(f"{get_time_tag()}     [✅] Tìm thấy form có fields: {field_names}")
                     break
         
-        # Cách 3: Tìm form có method POST
+        # PHƯƠNG PHÁP 3: TÌM FORM GẦN NỘI DUNG "SIGN UP"
         if not form:
-            for f in forms:
+            print(f"{get_time_tag()}     [🔍] Tìm form gần text 'Sign Up'...")
+            
+            # Tìm text Sign Up
+            signup_texts = soup.find_all(string=lambda text: text and 'sign' in text.lower() and 'up' in text.lower())
+            
+            for signup_text in signup_texts:
+                # Tìm form gần nhất
+                parent_form = signup_text.find_parent('form')
+                if parent_form:
+                    form = parent_form
+                    print(f"{get_time_tag()}     [✅] Tìm thấy form gần 'Sign Up'")
+                    break
+        
+        # PHƯƠNG PHÁP 4: LẤY FORM ĐẦU TIÊN CÓ METHOD POST
+        if not form:
+            print(f"{get_time_tag()}     [🔍] Lấy form POST đầu tiên...")
+            for f in soup.find_all('form'):
                 if f.get('method', '').lower() == 'post':
                     form = f
-                    print(f"{get_time_tag()}     [✅] Tìm thấy form bằng method POST")
+                    print(f"{get_time_tag()}     [✅] Lấy form POST đầu tiên")
                     break
         
-        # Cách 4: Lấy form đầu tiên nếu vẫn không tìm thấy
-        if not form and forms:
-            form = forms[0]
+        # PHƯƠNG PHÁP 5: LẤY FORM ĐẦU TIÊN
+        if not form and soup.find_all('form'):
+            form = soup.find_all('form')[0]
             print(f"{get_time_tag()}     [⚠️] Lấy form đầu tiên (có thể không đúng)")
         
         if not form:
+            # Debug: In ra tất cả form để phân tích
+            all_forms = soup.find_all('form')
+            print(f"{get_time_tag()}     [DEBUG] Tất cả form tìm thấy: {len(all_forms)}")
+            for i, f in enumerate(all_forms[:3]):
+                print(f"{get_time_tag()}     Form {i}: {str(f)[:200]}...")
+            
             return False, "Không tìm thấy form đăng ký trên mobile"
         
         print(f"{get_time_tag()}     [✅] Đã tìm thấy form mobile")
         
-        # THU THẬP CÁC FIELD TRONG FORM
+        # THU THẬP FIELD - PHƯƠNG PHÁP THÔNG MINH
         form_data = {}
         
-        for inp in form.find_all('input'):
-            name = inp.get('name')
-            value = inp.get('value', '')
-            
-            if name and name not in ['submit', 'cancel']:
-                form_data[name] = value
+        # Lấy tất cả input, select, textarea
+        all_inputs = form.find_all(['input', 'select', 'textarea'])
         
-        # THÊM THÔNG TIN ĐĂNG KÝ
+        print(f"{get_time_tag()}     [🔍] Đang phân tích {len(all_inputs)} fields...")
+        
+        for element in all_inputs:
+            element_name = element.get('name')
+            element_type = element.get('type', '').lower()
+            element_tag = element.name
+            
+            if not element_name:
+                continue
+            
+            # Giá trị mặc định
+            default_value = element.get('value', '')
+            
+            # Xử lý theo từng loại
+            if element_tag == 'input':
+                if element_type in ['hidden', 'submit', 'button']:
+                    form_data[element_name] = default_value
+                elif element_type in ['text', 'email', 'password']:
+                    form_data[element_name] = ''  # Để trống, sẽ điền sau
+                elif element_type == 'radio':
+                    if element.get('checked'):
+                        form_data[element_name] = element.get('value', '')
+                else:
+                    form_data[element_name] = default_value
+            
+            elif element_tag == 'select':
+                # Lấy option đầu tiên
+                first_option = element.find('option')
+                if first_option:
+                    form_data[element_name] = first_option.get('value', '')
+                else:
+                    form_data[element_name] = ''
+            
+            elif element_tag == 'textarea':
+                form_data[element_name] = ''
+        
+        # ĐIỀN THÔNG TIN ĐĂNG KÝ THÔNG MINH
         parts = fullname.split()
         firstname = parts[0]
         lastname = " ".join(parts[1:]) if len(parts) > 1 else firstname
         day, month, year = birthday.split("/")
         
-        # TÌM ĐÚNG TÊN FIELD CHO CÁC THÔNG TIN
-        name_fields_mapping = {}
-        for inp in form.find_all('input'):
-            name = inp.get('name', '')
-            if 'first' in name.lower():
-                name_fields_mapping['firstname'] = name
-            elif 'last' in name.lower():
-                name_fields_mapping['lastname'] = name
-            elif 'email' in name.lower():
-                name_fields_mapping['email'] = name
-            elif 'pass' in name.lower():
-                name_fields_mapping['password'] = name
+        print(f"{get_time_tag()}     [📝] Điền thông tin: {firstname} {lastname}, {email}")
         
-        # CẬP NHẬT FORM DATA VỚI FIELD ĐÚNG
-        for key, field_name in name_fields_mapping.items():
-            if key == 'firstname':
-                form_data[field_name] = firstname
-            elif key == 'lastname':
+        # TÌM VÀ ĐIỀN FIELD TỰ ĐỘNG
+        for field_name in form_data.keys():
+            field_lower = field_name.lower()
+            
+            # Tên
+            if any(keyword in field_lower for keyword in ['first', 'given', 'ten', 'ho']):
+                if 'last' not in field_lower:  # Tránh nhầm với lastname
+                    form_data[field_name] = firstname
+            
+            elif any(keyword in field_lower for keyword in ['last', 'family', 'dem', 'lot']):
                 form_data[field_name] = lastname
-            elif key == 'email':
+            
+            # Email
+            elif any(keyword in field_lower for keyword in ['email', 'mail', 'e-mail']):
                 form_data[field_name] = email
                 # Tìm field xác nhận email
-                for inp in form.find_all('input'):
-                    inp_name = inp.get('name', '')
-                    if 'confirm' in inp_name.lower() and 'email' in inp_name.lower():
-                        form_data[inp_name] = email
-            elif key == 'password':
+                for confirm_field in form_data.keys():
+                    if confirm_field != field_name and 'confirm' in confirm_field.lower() and 'email' in confirm_field.lower():
+                        form_data[confirm_field] = email
+            
+            # Mật khẩu
+            elif any(keyword in field_lower for keyword in ['pass', 'pwd', 'matkhau']):
                 form_data[field_name] = password
-        
-        # THÊM NGÀY SINH
-        for inp in form.find_all('select'):
-            name = inp.get('name', '').lower()
-            if 'day' in name:
-                form_data[name] = day
-            elif 'month' in name:
-                form_data[name] = month
-            elif 'year' in name:
-                form_data[name] = year
-        
-        # THÊM GIỚI TÍNH
-        gender_field = None
-        for inp in form.find_all('input'):
-            name = inp.get('name', '').lower()
-            if 'sex' in name or 'gender' in name:
-                gender_field = name
-                break
-        
-        if gender_field:
-            form_data[gender_field] = str(random.choice([1, 2]))  # 1=Nữ, 2=Nam
+            
+            # Ngày sinh
+            elif 'day' in field_lower or 'ngay' in field_lower:
+                form_data[field_name] = day
+            elif 'month' in field_lower or 'thang' in field_lower:
+                form_data[field_name] = month
+            elif 'year' in field_lower or 'nam' in field_lower:
+                form_data[field_name] = year
+            
+            # Giới tính
+            elif any(keyword in field_lower for keyword in ['sex', 'gender', 'gioitinh']):
+                if 'female' in field_lower or 'nu' in field_lower or '1' in field_lower:
+                    form_data[field_name] = '1'  # Nữ
+                elif 'male' in field_lower or 'nam' in field_lower or '2' in field_lower:
+                    form_data[field_name] = '2'  # Nam
+                else:
+                    form_data[field_name] = str(random.choice([1, 2]))
         
         # XỬ LÝ ACTION URL
         action = form.get('action', '')
@@ -686,31 +777,33 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
         if action.startswith('http'):
             submit_url = action
         elif action.startswith('/'):
-            # Lấy domain từ base_url
-            parsed_url = urlparse(base_url)
-            domain = f"{parsed_url.scheme}://{parsed_url.netloc}"
+            parsed_base = urlparse(base_url)
+            domain = f"{parsed_base.scheme}://{parsed_base.netloc}"
             submit_url = domain + action
-        else:
+        elif action:
             submit_url = urljoin(base_url, action)
+        else:
+            submit_url = base_url
         
         print(f"{get_time_tag()} [2/3] Đang submit form mobile...")
         time.sleep(random.uniform(2, 3))
         
-        # THÊM HEADERS CHO SUBMIT
+        # HEADERS CHO SUBMIT
         submit_headers = {
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate',
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 13; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Origin': 'https://www.facebook.com',
+            'Origin': parsed_base.scheme + '://' + parsed_base.netloc if parsed_base.netloc else 'https://mbasic.facebook.com',
             'Referer': response.url,
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
-            'Cache-Control': 'max-age=0',
         }
         
-        # GỬI REQUEST SUBMIT
+        # GỬI REQUEST
+        print(f"{get_time_tag()}     Submitting to: {submit_url}")
+        print(f"{get_time_tag()}     Data fields: {len(form_data)}")
+        
         submit_response = session.post(
             submit_url,
             data=form_data,
@@ -721,224 +814,97 @@ def mobile_facebook_registration(session, fullname, email, password, birthday):
         
         print(f"{get_time_tag()} [3/3] Kiểm tra kết quả mobile...")
         
+        # DEBUG: Lưu response
         if RAILWAY_MODE:
             debug_save_html("debug_mobile_response.html", submit_response.text[:3000])
         
         # KIỂM TRA KẾT QUẢ
-        # Kiểm tra cookie
+        # 1. Kiểm tra cookie
         if 'c_user' in session.cookies:
             uid = session.cookies.get('c_user')
+            print(f"{get_time_tag()}     [✅] Found c_user cookie: {uid}")
             return True, f"Thành công (Mobile - UID: {uid})"
         
-        # Kiểm tra redirect
-        final_url = submit_response.url.lower()
-        final_html = submit_response.text.lower()
+        # 2. Kiểm tra trong HTML có thông tin thành công
+        response_text = submit_response.text.lower()
+        response_url = submit_response.url.lower()
         
-        success_keywords = ['home', 'welcome', 'profile', 'timeline', 'feed']
-        checkpoint_keywords = ['checkpoint', 'security', 'confirm', 'verify']
-        error_keywords = ['error', 'sorry', 'temporarily', 'blocked', 'invalid']
+        # Các dấu hiệu thành công
+        success_indicators = [
+            'welcome', 'home', 'news feed', 'bảng feed',
+            'profile', 'trang cá nhân', 'timeline',
+            'confirmed', 'xác nhận', 'check your email',
+            'continue', 'tiếp tục'
+        ]
         
-        # Kiểm tra thành công
-        for keyword in success_keywords:
-            if keyword in final_url or keyword in final_html:
-                # Cố gắng lấy UID từ cookie hoặc HTML
-                uid_match = re.search(r'c_user=(\d+)', str(session.cookies))
-                if uid_match:
-                    uid = uid_match.group(1)
-                    return True, f"Thành công (Mobile - UID: {uid})"
-                else:
-                    return True, "Thành công (Mobile - cần xác nhận)"
+        for indicator in success_indicators:
+            if indicator in response_text or indicator in response_url:
+                # Cố gắng tìm UID trong HTML
+                uid_patterns = [
+                    r'c_user=(\d+)',
+                    r'id=(\d+)',
+                    r'uid=(\d+)',
+                    r'profile\.php\?id=(\d+)'
+                ]
+                
+                for pattern in uid_patterns:
+                    match = re.search(pattern, response_text)
+                    if match:
+                        uid = match.group(1)
+                        return True, f"Thành công (Mobile - UID: {uid})"
+                
+                return True, "Thành công (Mobile - cần xác nhận)"
         
-        # Kiểm tra checkpoint
-        for keyword in checkpoint_keywords:
-            if keyword in final_url or keyword in final_html:
-                return True, "Checkpoint (Mobile - cần xác minh)"
+        # 3. Kiểm tra checkpoint
+        if 'checkpoint' in response_url or 'security' in response_url:
+            return True, "Checkpoint (Mobile - cần xác minh)"
         
-        # Kiểm tra lỗi
-        for keyword in error_keywords:
-            if keyword in final_url or keyword in final_html:
-                return False, f"Lỗi mobile: {keyword.capitalize()}"
+        # 4. Kiểm tra lỗi
+        error_patterns = [
+            r'class="[^"]*error[^"]*"[^>]*>([^<]+)',
+            r'id="error"[^>]*>([^<]+)',
+            r'>([^<]*error[^<]*)<',
+            r'alert[^>]*>([^<]+)'
+        ]
         
-        # Nếu không phát hiện gì, kiểm tra thủ công
-        if 'id="reg_error"' in submit_response.text:
-            error_match = re.search(r'id="reg_error"[^>]*>([^<]+)', submit_response.text)
-            if error_match:
-                error_msg = error_match.group(1).strip()[:100]
+        for pattern in error_patterns:
+            matches = re.findall(pattern, submit_response.text, re.IGNORECASE)
+            if matches:
+                error_msg = matches[0][:100]
                 return False, f"Lỗi mobile: {error_msg}"
         
+        # 5. Kiểm tra nếu bị chặn
+        block_keywords = ['blocked', 'temporarily', 'suspended', 'banned', 'chặn', 'khóa']
+        for keyword in block_keywords:
+            if keyword in response_text:
+                return False, f"Facebook chặn: {keyword}"
+        
         # Mặc định
-        return False, "Không xác định kết quả (Mobile)"
+        print(f"{get_time_tag()}     [ℹ️] Response URL: {submit_response.url}")
+        print(f"{get_time_tag()}     [ℹ️] Response length: {len(submit_response.text)} chars")
+        
+        return False, "Không xác định (Mobile - không có cookie, không có lỗi rõ ràng)"
             
     except Exception as e:
         error_msg = str(e)
         print(f"{get_time_tag()} ❌ Lỗi mobile registration: {error_msg}")
+        import traceback
+        traceback.print_exc()
         return False, f"Lỗi mobile: {error_msg[:100]}"
 
 # ================= WEB FACEBOOK REGISTRATION =================
 def simple_facebook_registration(session, fullname, email, password, birthday):
-    """Đăng ký Facebook web - Phiên bản fix cho Railway"""
+    """Đăng ký Facebook web - Fallback method"""
     try:
-        print(f"{get_time_tag()} [1/3] Đang lấy trang đăng ký web...")
+        print(f"{get_time_tag()} [1/3] Đang thử đăng ký web...")
         
-        # Thêm headers đầy đủ
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-User': '?1',
-            'Cache-Control': 'max-age=0',
-            'DNT': '1',
-            'TE': 'trailers'
-        }
-        session.headers.update(headers)
-        
-        # Dùng URL đăng ký
-        reg_urls = [
-            "https://www.facebook.com/reg/",
-            "https://www.facebook.com/r.php"
-        ]
-        
-        response = None
-        for url in reg_urls:
-            try:
-                print(f"{get_time_tag()}     Thử: {url}")
-                response = session.get(url, timeout=20, allow_redirects=True)
-                
-                if RAILWAY_MODE:
-                    debug_save_html("debug_web_page.html", response.text[:3000])
-                
-                if response.status_code == 200:
-                    content_lower = response.text.lower()
-                    if any(keyword in content_lower for keyword in ['sign up', 'reg_email', 'firstname']):
-                        print(f"{get_time_tag()}     [✅] Tìm thấy trang đăng ký web")
-                        break
-                print(f"{get_time_tag()}     [⚠️] Status {response.status_code}")
-                
-            except Exception as e:
-                print(f"{get_time_tag()}     [❌] Lỗi: {str(e)[:50]}")
-                continue
-        
-        if not response or response.status_code != 200:
-            # Fallback: Thử mobile
-            print(f"{get_time_tag()}     [🔄] Fallback sang mobile")
-            return mobile_facebook_registration(session, fullname, email, password, birthday)
-        
-        # Parse HTML
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Tìm form
-        form = None
-        forms = soup.find_all('form')
-        
-        # Cách 1: Tìm form có field reg_email__
-        for f in forms:
-            if f.find('input', {'name': 'reg_email__'}):
-                form = f
-                break
-        
-        # Cách 2: Tìm form có action chứa /reg/
-        if not form:
-            for f in forms:
-                action = f.get('action', '')
-                if '/reg' in action or '/r.php' in action:
-                    form = f
-                    break
-        
-        # Cách 3: Lấy form đầu tiên
-        if not form and forms:
-            form = forms[0]
-        
-        if not form:
-            print(f"{get_time_tag()}     [🔄] Không tìm thấy form web, chuyển sang mobile")
-            return mobile_facebook_registration(session, fullname, email, password, birthday)
-        
-        print(f"{get_time_tag()}     [✅] Đã tìm thấy form web")
-        
-        # Thu thập field
-        form_data = {}
-        
-        for inp in form.find_all('input'):
-            name = inp.get('name')
-            value = inp.get('value', '')
-            
-            if name:
-                form_data[name] = value
-        
-        # Thêm thông tin
-        parts = fullname.split()
-        firstname = parts[0]
-        lastname = " ".join(parts[1:]) if len(parts) > 1 else firstname
-        day, month, year = birthday.split("/")
-        
-        form_data.update({
-            'firstname': firstname,
-            'lastname': lastname,
-            'reg_email__': email,
-            'reg_email_confirmation__': email,
-            'reg_passwd__': password,
-            'birthday_day': day,
-            'birthday_month': month,
-            'birthday_year': year,
-            'sex': str(random.choice([1, 2])),
-        })
-        
-        # Xử lý action URL
-        action = form.get('action', '')
-        base_url = response.url
-        
-        if action.startswith('http'):
-            submit_url = action
-        elif action.startswith('/'):
-            domain = 'https://www.facebook.com'
-            submit_url = domain + action
-        else:
-            submit_url = base_url
-        
-        print(f"{get_time_tag()} [2/3] Đang submit form web...")
-        time.sleep(random.uniform(2, 4))
-        
-        # Gửi request
-        submit_response = session.post(
-            submit_url,
-            data=form_data,
-            timeout=30,
-            allow_redirects=True,
-            headers={
-                'Referer': response.url,
-                'Origin': 'https://www.facebook.com',
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        )
-        
-        print(f"{get_time_tag()} [3/3] Kiểm tra kết quả web...")
-        
-        # Kiểm tra cookie
-        if 'c_user' in session.cookies:
-            uid = session.cookies.get('c_user')
-            return True, f"Thành công (Web - UID: {uid})"
-        
-        # Kiểm tra kết quả
-        final_url = submit_response.url.lower()
-        
-        if 'checkpoint' in final_url:
-            return False, "Checkpoint (Web)"
-        elif 'confirm' in final_url:
-            return True, "Cần xác nhận email (Web)"
-        elif 'home' in final_url or 'facebook.com/?sk=welcome' in final_url:
-            return True, "Thành công (Web)"
-        else:
-            return False, "Không xác định (Web)"
+        # Thử mobile trước (đáng tin cậy hơn)
+        print(f"{get_time_tag()}     [🔄] Chuyển sang mobile method...")
+        return mobile_facebook_registration(session, fullname, email, password, birthday)
             
     except Exception as e:
         print(f"{get_time_tag()} ❌ Web error: {str(e)[:100]}")
-        # Fallback sang mobile
-        return mobile_facebook_registration(session, fullname, email, password, birthday)
+        return False, f"Lỗi web: {str(e)[:100]}"
 
 def check_live_status(session):
     """Kiểm tra account có live không"""
@@ -1009,6 +975,14 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
         password = matkhau()
         birthday = birth()
         
+        tg_edit(chat_id, msg_id, 
+            f"{get_time_tag()} 📝 Thông tin acc:\n"
+            f"• Tên: {fullname}\n"
+            f"• Email: {email}\n"
+            f"• Pass: {password}\n"
+            f"• Sinh nhật: {birthday}"
+        )
+        time.sleep(2)
 
         # Tạo session
         tg_edit(chat_id, msg_id, f"{get_time_tag()} 🌐 Đang tạo session...")
@@ -1018,25 +992,25 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
             RUNNING_CHAT.remove(chat_id)
             return
         
-        # THÊM: Ưu tiên mobile trên Railway
-        if RAILWAY_MODE:
-            tg_edit(chat_id, msg_id, f"{get_time_tag()} 📱 Railway: Ưu tiên mobile registration...")
-            success, message = mobile_facebook_registration(session, fullname, email, password, birthday)
-        else:
-            tg_edit(chat_id, msg_id, f"{get_time_tag()} 🖥 Đang đăng ký web...")
-            success, message = simple_facebook_registration(session, fullname, email, password, birthday)
+        # LUÔN DÙNG MOBILE METHOD (đáng tin cậy hơn)
+        tg_edit(chat_id, msg_id, f"{get_time_tag()} 📱 Đang đăng ký qua mobile...")
+        success, message = mobile_facebook_registration(session, fullname, email, password, birthday)
         
         if not success:
             tg_edit(chat_id, msg_id, f"{get_time_tag()} ❌ Đăng ký thất bại: {message}")
             
-            # Thử cách khác nếu thất bại
-            if RAILWAY_MODE and "mobile" not in message.lower():
-                tg_edit(chat_id, msg_id, f"{get_time_tag()} 🔄 Thử cách khác...")
-                time.sleep(2)
-                success, message = simple_facebook_registration(session, fullname, email, password, birthday)
+            # Thử lần 2 với delay
+            tg_edit(chat_id, msg_id, f"{get_time_tag()} 🔄 Thử lần 2...")
+            time.sleep(5)
+            
+            # Tạo session mới
+            session.close()
+            session = create_session_with_retry()
+            if session:
+                success, message = mobile_facebook_registration(session, fullname, email, password, birthday)
             
             if not success:
-                # Vẫn check thử
+                # Kiểm tra lần cuối
                 time.sleep(3)
                 is_live, live_msg, profile_url, uid = check_live_status(session)
                 
@@ -1096,12 +1070,15 @@ def reg_single_account(chat_id, user_id, user_name, message_id):
         }
         tg_edit(chat_id, msg_id, format_result(error_result, False))
         print(f"{get_time_tag()} ❌ System error: {e}")
+        import traceback
+        traceback.print_exc()
 
         if session:
             try:
                 session.close()
             except:
                 pass
+        RUNNING_CHAT.remove(chat_id)
 
 def save_account_to_file(fullname, email, password, profile_url, cookies_dict):
     """Lưu account vào file"""
@@ -1151,12 +1128,6 @@ def format_result(d, success):
     for k in ["name", "email", "password", "status", "uid", "cookies"]:
         if k not in d or d[k] is None:
             d[k] = "None"
-
-    footer = html_escape(
-        """
-        𐔌. FB    : /tg.nux — Trung Hiếu
-   """
-    )
 
     return (
         f"<b>{status_color} REG {'THÀNH CÔNG' if is_live else 'THẤT BẠI'} {'🎊' if is_live else '❌'}</b>\n"
